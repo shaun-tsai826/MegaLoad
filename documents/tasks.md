@@ -178,8 +178,9 @@
 
 ### Group 5：Vue 3 前端 — Pinia Stores
 
-- [ ] 8. 實作 `useUrlInputStore`
-  - [ ] 8.1 建立 `src/stores/urlInput.ts`
+- [x] 8. 實作 `useUrlInputStore`
+  - [x] 8.1 建立 `src/stores/urlInput.ts`
+    - 實作調整：`reset()` 保留 `selectedPath`；URL 變更時清掉舊的 metadata；新增 `loadDefaultPath()`（呼叫 `get_default_download_dir`）
     - 定義全部 state（`url`、`validationState`、`isParsing`、`metadata`、`parseError`、`selectedQuality`、`selectedPath`）
     - 實作 `canParse` 與 `hasMetadata` computed getters
     - 實作 `setUrl(value: string)`：空字串 → `idle`，否則呼叫 `validateUrl` 設定 `valid`/`invalid`
@@ -188,13 +189,14 @@
     - 實作 `reset()`：清空全部狀態
     - _Requirements: 1.2, 1.3, 1.4, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.4, 3.5_
 
-  - [ ]* 8.2 為 `selectedQuality` 預設選取撰寫 property test
+  - [x]* 8.2 為 `selectedQuality` 預設選取撰寫 property test
     - **Property 5: 預設選取最高畫質**
     - 對任意非空 `QualityOption[]`，`setUrl` + `parseVideo` 完成後 `selectedQuality` 必為優先順序最高的選項（1080p > 720p > 480p > audio_mp3）
     - **Validates: Requirements 3.1**
 
-- [ ] 9. 實作 `useDownloadTaskStore`
-  - [ ] 9.1 建立 `src/stores/downloadTask.ts`
+- [x] 9. 實作 `useDownloadTaskStore`
+  - [x] 9.1 建立 `src/stores/downloadTask.ts`
+    - 實作調整：新增 `markCancelled`（對應 `download://cancelled`）、`retryTask`、`toHistoryRecord`；`cancelTask` 只通知後端，狀態等事件到達才改變
     - 以 `Map<string, DownloadTask>` 維護進行中任務
     - 實作 `taskList` computed（按 `createdAt` 降序排列）與 `activeCount` computed
     - 實作 `startDownload(url, quality, outputPath, metadata)`：invoke `start_download`，以回傳的 `task_id` 建立 `DownloadTask` 並插入 Map，初始狀態 `pending`
@@ -203,18 +205,19 @@
     - 實作 `cancelTask(taskId)` 與 `removeTask(taskId)`
     - _Requirements: 4.1, 4.2, 4.3, 4.5, 7.2_
 
-  - [ ]* 9.2 為 `updateProgress` 撰寫 property test
+  - [x]* 9.2 為 `updateProgress` 撰寫 property test
     - **Property 8: 進度事件驅動 Store 狀態一致性**
     - 對 Map 中存在的 task_id，接收 `download://progress` 事件後，該 task 的四個進度欄位必等於事件攜帶數值，其他 task 狀態不變
     - **Validates: Requirements 4.5**
 
-  - [ ]* 9.3 為 `markFailed` 撰寫 property test
+  - [x]* 9.3 為 `markFailed` 撰寫 property test
     - **Property 12: 下載失敗狀態轉換正確性**
     - 對狀態為 `downloading` 的 task，接收 `download://failed` 後，`status` 必轉為 `failed`，`errorMessage` 必為非空字串，其他 task 狀態不變
     - **Validates: Requirements 7.1, 7.2**
 
-- [ ] 10. 實作 `useHistoryStore` 與 `useTauriEvents` composable
-  - [ ] 10.1 建立 `src/stores/history.ts`
+- [x] 10. 實作 `useHistoryStore` 與 `useTauriEvents` composable
+  - [x] 10.1 建立 `src/stores/history.ts`
+    - 實作調整：後端已在任務結束時寫入 history.json，`appendRecord` 只更新畫面（相同 id 會取代）
     - 定義 `records: HistoryRecord[]` state 與 `isLoading` flag
     - 實作 `loadHistory()`：invoke `get_history`，更新 `records`
     - 實作 `deleteRecord(id)`：invoke `delete_history_item`，本地過濾
@@ -223,12 +226,13 @@
     - 實作 `retryDownload(record: HistoryRecord)`：呼叫 `downloadTaskStore.startDownload` 以原始參數重新建立任務
     - _Requirements: 6.2, 6.3, 6.4, 6.5, 7.3_
 
-  - [ ]* 10.2 為 `retryDownload` 撰寫 property test
+  - [x]* 10.2 為 `retryDownload` 撰寫 property test
     - **Property 10: 重試任務參數不變性**
     - 對任意 `failed`/`cancelled` 的 `HistoryRecord`，`retryDownload` 建立的新 `DownloadTask`，其 `url`、`quality`、`outputPath` 必與原 record 完全一致
     - **Validates: Requirements 6.3, 7.3**
 
-  - [ ] 10.3 建立 `src/composables/useTauriEvents.ts`
+  - [x] 10.3 建立 `src/composables/useTauriEvents.ts`
+    - 另外訂閱 `download://cancelled` → `downloadTaskStore.markCancelled()` 與 `historyStore.appendRecord()`
     - 實作 `useTauriEvents()`：訂閱 `download://progress` → 呼叫 `downloadTaskStore.updateProgress()`
     - 訂閱 `download://completed` → 呼叫 `downloadTaskStore.markCompleted()` 與 `historyStore.appendRecord()`，並觸發系統通知（`sendNotification`）
     - 訂閱 `download://failed` → 呼叫 `downloadTaskStore.markFailed()` 與 `historyStore.appendRecord()`

@@ -169,6 +169,23 @@ export interface HistoryRecord {
 }
 
 // ---------------------------------------------------------------------------
+// Errors
+// ---------------------------------------------------------------------------
+
+/** `AppError` variant names from `src-tauri/src/error.rs`. */
+export type AppErrorType = "AuthRequired" | "YtDlpError" | "NetworkError" | "IoError" | "Unknown";
+
+/**
+ * A rejected Tauri command's error, as serialized by Rust:
+ * `{ "type": "YtDlpError", "message": "..." }`. Unit variants such as
+ * `AuthRequired` have no `message`.
+ */
+export interface AppError {
+  type: AppErrorType;
+  message?: string;
+}
+
+// ---------------------------------------------------------------------------
 // Tauri Event Payloads
 // ---------------------------------------------------------------------------
 // The Rust structs use `#[serde(rename_all = "camelCase")]`, so keys are camelCase.
@@ -209,7 +226,7 @@ export interface DownloadCompletedEvent {
 export interface DownloadFailedEvent {
   taskId: string;
   /** Structured error category. */
-  errorType: "NetworkError" | "AuthRequired" | "YtDlpError" | "IoError" | "Unknown";
+  errorType: AppErrorType;
   /** Human-readable error description. */
   message: string;
 }
