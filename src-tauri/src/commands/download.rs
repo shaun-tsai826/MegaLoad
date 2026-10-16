@@ -33,6 +33,17 @@ const DONE_PREFIX: &str = "MEGALOAD_DONE:";
 /// The prefix keeps it distinguishable from progress lines.
 const DONE_PRINT_TEMPLATE: &str = "after_move:MEGALOAD_DONE:%(.{title,filepath})j";
 
+/// Output filename for video downloads, tagged with the height yt-dlp actually
+/// downloaded (e.g. `Title [720p].mp4`). Using the real height rather than the
+/// requested quality keeps the tag honest when the selector falls back to a
+/// lower resolution, and keeps different qualities from sharing one filename
+/// (yt-dlp skips a download whose file already exists). No tag if the height
+/// is unknown.
+const VIDEO_OUTPUT_TEMPLATE: &str = "%(title)s%(height& [{}p]|)s.%(ext)s";
+
+/// Output filename for MP3 downloads, e.g. `Title [MP3].mp3`.
+const AUDIO_OUTPUT_TEMPLATE: &str = "%(title)s [MP3].%(ext)s";
+
 /// How long to wait after SIGTERM before force-killing the sidecar.
 const CANCEL_GRACE: Duration = Duration::from_secs(5);
 
@@ -216,7 +227,7 @@ pub(crate) fn build_download_args(
         "-P",
         output_path,
         "-o",
-        "%(title)s.%(ext)s",
+        output_template(quality),
     ]
     .into_iter()
     .map(String::from)
@@ -230,6 +241,13 @@ pub(crate) fn build_download_args(
     args.push("--".into());
     args.push(url.into());
     args
+}
+
+fn output_template(quality: &QualityOption) -> &'static str {
+    match quality {
+        QualityOption::AudioMp3 => AUDIO_OUTPUT_TEMPLATE,
+        _ => VIDEO_OUTPUT_TEMPLATE,
+    }
 }
 
 /// Parses a `MEGALOAD_DONE:{...}` line; returns `None` for any other line.
@@ -480,6 +498,22 @@ mod tests {
         assert_eq!(
             value_of(&args, "-f"),
             Some(QualityOption::Q1080p.format_selector())
+        );
+    }
+
+    #[test]
+    fn video_filenames_are_tagged_with_actual_height() {
+        for q in [QualityOption::Q1080p, QualityOption::Q720p, QualityOption::Q480p] {
+            assert_eq!(value_of(&args_for(q), "-o"), Some(VIDEO_OUTPUT_TEMPLATE));
+        }
+        assert!(VIDEO_OUTPUT_TEMPLATE.contains("%(height"));
+    }
+
+    #[test]
+    fn mp3_filenames_are_tagged_mp3() {
+        assert_eq!(
+            value_of(&args_for(QualityOption::AudioMp3), "-o"),
+            Some("%(title)s [MP3].%(ext)s")
         );
     }
 

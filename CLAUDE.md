@@ -73,6 +73,7 @@
 實作上的決定與已知行為：
 - history.json 位於 `app_data_dir()`，macOS 為 `~/Library/Application Support/com.video-downloader.app/history.json`（目錄名稱用的是 identifier，不是 design.md 寫的 productName）。格式為 `{ "version": 1, "records": [...] }`，camelCase、最新在前。
 - 下載完成時用 `--print after_move:MEGALOAD_DONE:%(.{title,filepath})j` 取得標題與最終路徑；`--print` 會隱含 `--quiet`，所以要加 `--progress`。
+- 輸出檔名帶上**實際下載的高度**（`標題 [720p].mp4`，選 1080p 但影片只有 480p 時會標 `[480p]`），MP3 為 `標題 [MP3].mp3`。原因：yt-dlp 看到同名檔案會跳過下載，舊的 `%(title)s.%(ext)s` 會讓不同畫質共用檔名，回報的其實是舊檔。同一畫質重複下載時仍會直接回報完成，不會有進度事件。
 - 影像與音訊分開下載，進度會從 0% 跑到 100% **兩次**；UI 要不要合併成一條進度，留到階段 3 再決定。
 - 取消時在 Unix 上送 SIGTERM，因為 PyInstaller 單檔版收到 SIGKILL 會留下孤兒子程序繼續下載（已實測）。Windows 上直接呼叫 `kill()`，**尚未在 Windows 驗證**是否會留下子程序。取消後 `.part` 檔會保留，供重試時續傳。
 - 尚未驗證：`select_folder` 對話框、`parse_video` 給無效 URL 的情況（tasks.md 的 6. Checkpoint 因此還沒勾）。
