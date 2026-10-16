@@ -142,8 +142,9 @@
 
 ### Group 4：下載歷史持久化
 
-- [ ] 7. 實作 `src-tauri/src/commands/history.rs` 歷史記錄 CRUD
-  - [ ] 7.1 實作 history JSON 讀寫輔助函式
+- [x] 7. 實作 `src-tauri/src/commands/history.rs` 歷史記錄 CRUD
+  - [x] 7.1 實作 history JSON 讀寫輔助函式
+    - 實作調整：改為 `HistoryState`（在 `setup` 中以 `app_data_dir()/history.json` 建立並 `manage()`），以 `Mutex` 讓讀取→修改→寫入整段依序執行（設計調整 #5）；先寫暫存檔再 rename；檔案無法解析時備份為 `history.json.bak`
     - 實作 `history_path(app: &AppHandle) -> PathBuf`，使用 `app.path().app_data_dir()` 取得平台適合路徑並附加 `history.json`
     - 實作 `load_history(app: &AppHandle) -> Vec<HistoryRecord>`：檔案不存在時回傳空 `Vec`，讀取失敗時同樣回傳空 `Vec`
     - 實作 `save_history(app: &AppHandle, records: &[HistoryRecord])`：建立父目錄（`create_dir_all`），以 `serde_json::to_string_pretty` 序列化後寫入
@@ -154,7 +155,7 @@
     - 使用 `proptest`，對任意 `completed`/`failed`/`cancelled` 狀態的 `HistoryRecord`，序列化再反序列化後，`id`、`url`、`quality`、`outputPath`、`status` 必與原始值相同
     - **Validates: Requirements 6.1**
 
-  - [ ] 7.3 實作 `get_history`、`delete_history_item`、`clear_all_history` commands
+  - [x] 7.3 實作 `get_history`、`delete_history_item`、`clear_all_history` commands
     - 實作 `#[tauri::command] async fn get_history(app: AppHandle) -> Result<Vec<HistoryRecord>, AppError>`
     - 實作 `#[tauri::command] async fn delete_history_item(app: AppHandle, id: String) -> Result<(), AppError>`：過濾後回寫 JSON
     - 實作 `#[tauri::command] async fn clear_all_history(app: AppHandle) -> Result<(), AppError>`：清空後回寫空 `records` JSON
@@ -166,7 +167,9 @@
     - 對任意 N ≥ 1 筆記錄的列表，刪除任意一筆後：列表長度必為 N-1，被刪 id 不再出現，其餘 N-1 筆欄位不變
     - **Validates: Requirements 6.4**
 
-  - [ ] 7.5 在 `start_download` 完成/失敗時寫入歷史記錄
+  - [x] 7.5 在 `start_download` 完成/失敗時寫入歷史記錄
+    - 取消時同樣寫入（status: `cancelled`）
+    - `start_download` 新增選填參數 `title`、`thumbnail`（由前端從 metadata 傳入），因為失敗或取消時 yt-dlp 無法提供這兩個欄位
     - 在 `download.rs` Tokio task 完成時呼叫 `save_history` 附加新 `HistoryRecord`（status: `completed`）
     - 失敗時同樣寫入 `HistoryRecord`（status: `failed`）
     - _Requirements: 6.1_

@@ -56,6 +56,12 @@ pub struct DownloadTask {
     pub url: String,
     pub quality: QualityOption,
     pub output_path: String,
+    /// Title from the frontend's parsed metadata; empty if not provided.
+    pub title: String,
+    /// Thumbnail URL from the frontend's parsed metadata; empty if not provided.
+    pub thumbnail: String,
+    /// ISO 8601 timestamp when the task was created.
+    pub created_at: String,
     pub status: DownloadStatus,
     /// Sending on this channel requests cancellation of the running yt-dlp process.
     pub cancel_tx: Option<oneshot::Sender<()>>,

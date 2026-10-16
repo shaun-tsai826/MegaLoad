@@ -9,8 +9,9 @@ use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tokio::sync::oneshot;
 use tokio::time::Instant;
 
+use crate::commands::history::HistoryState;
 use crate::error::AppError;
-use crate::models::{DownloadStatus, DownloadTask, QualityOption};
+use crate::models::{DownloadStatus, DownloadTask, HistoryRecord, QualityOption};
 use crate::progress::parse_progress_line;
 use crate::sidecar::spawn_sidecar;
 
@@ -105,7 +106,12 @@ pub(crate) enum Outcome {
 /// Starts a download in the background and returns its task id immediately.
 ///
 /// Progress is reported via `download://progress`; the task ends with exactly
-/// one of `download://completed`, `download://failed` or `download://cancelled`.
+/// one of `download://completed`, `download://failed` or `download://cancelled`,
+/// and a matching `HistoryRecord` is appended to `history.json`.
+///
+/// `title` and `thumbnail` come from the frontend's parsed metadata and are
+/// stored in the history record (yt-dlp cannot supply them for failed or
+/// cancelled downloads).
 ///
 /// # Errors
 /// Returns `AppError::YtDlpError` if the yt-dlp sidecar cannot be spawned, and
@@ -117,6 +123,8 @@ pub async fn start_download(
     url: String,
     quality: QualityOption,
     output_path: String,
+    title: Option<String>,
+    thumbnail: Option<String>,
 ) -> Result<String, AppError> {
     let ffmpeg = ffmpeg_location()?;
     let args = build_download_args(&url, &quality, &output_path, &ffmpeg);
@@ -133,6 +141,9 @@ pub async fn start_download(
             url,
             quality,
             output_path,
+            title: title.unwrap_or_default(),
+            thumbnail: thumbnail.unwrap_or_default(),
+            created_at: now_iso8601(),
             status: DownloadStatus::Pending,
             cancel_tx: Some(cancel_tx),
         },
@@ -141,9 +152,15 @@ pub async fn start_download(
     let id = task_id.clone();
     tauri::async_runtime::spawn(async move {
         let outcome = drive_download(&app, &id, rx, child, cancel_rx).await;
-        app.state::<DownloadState>().tasks().remove(&id);
-        // TODO(7.5): 寫入 history.json
-        emit_outcome(&app, &id, outcome);
+        let finished_at = now_iso8601();
+        let task = app.state::<DownloadState>().tasks().remove(&id);
+        if let Some(task) = task {
+            let record = history_record(&task, &outcome, &finished_at);
+            if let Err(e) = app.state::<HistoryState>().append(record) {
+                eprintln!("寫入下載歷史失敗：{e}");
+            }
+        }
+        emit_outcome(&app, &id, outcome, &finished_at);
     });
 
     Ok(task_id)
@@ -240,6 +257,47 @@ pub(crate) fn resolve_outcome(
         (code, _) => Outcome::Failed(AppError::YtDlpError(format!(
             "yt-dlp 異常結束（結束代碼 {code:?}）"
         ))),
+    }
+}
+
+/// Builds the history entry for a finished task.
+///
+/// The title prefers the frontend's metadata, then the title yt-dlp printed,
+/// then the URL, so a record is never untitled.
+pub(crate) fn history_record(
+    task: &DownloadTask,
+    outcome: &Outcome,
+    finished_at: &str,
+) -> HistoryRecord {
+    let (status, file_path, error_message, completed_at, printed_title) = match outcome {
+        Outcome::Completed(info) => (
+            "completed",
+            Some(info.filepath.clone()),
+            None,
+            Some(finished_at.to_string()),
+            Some(info.title.as_str()),
+        ),
+        Outcome::Failed(err) => ("failed", None, Some(err.to_string()), None, None),
+        Outcome::Cancelled => ("cancelled", None, None, None, None),
+    };
+    let title = if task.title.is_empty() {
+        printed_title.unwrap_or(&task.url).to_string()
+    } else {
+        task.title.clone()
+    };
+
+    HistoryRecord {
+        id: task.id.clone(),
+        url: task.url.clone(),
+        title,
+        thumbnail: task.thumbnail.clone(),
+        quality: task.quality.clone(),
+        output_path: task.output_path.clone(),
+        file_path,
+        status: status.to_string(),
+        error_message,
+        created_at: task.created_at.clone(),
+        completed_at,
     }
 }
 
@@ -360,7 +418,7 @@ fn mark_downloading(app: &AppHandle, task_id: &str) {
     }
 }
 
-fn emit_outcome(app: &AppHandle, task_id: &str, outcome: Outcome) {
+fn emit_outcome(app: &AppHandle, task_id: &str, outcome: Outcome, finished_at: &str) {
     let task_id = task_id.to_string();
     let _ = match outcome {
         Outcome::Completed(info) => app.emit(
@@ -369,7 +427,7 @@ fn emit_outcome(app: &AppHandle, task_id: &str, outcome: Outcome) {
                 task_id,
                 file_path: info.filepath,
                 title: info.title,
-                completed_at: now_iso8601(),
+                completed_at: finished_at.to_string(),
             },
         ),
         Outcome::Failed(err) => app.emit(
@@ -521,6 +579,70 @@ mod tests {
             resolve_outcome(false, Some(0), None, ""),
             Outcome::Failed(AppError::YtDlpError(_))
         ));
+    }
+
+    fn task(title: &str) -> DownloadTask {
+        DownloadTask {
+            id: "task-1".into(),
+            url: URL.into(),
+            quality: QualityOption::Q720p,
+            output_path: "/out".into(),
+            title: title.into(),
+            thumbnail: "https://i.ytimg.com/t.jpg".into(),
+            created_at: "2026-10-16T00:00:00Z".into(),
+            status: DownloadStatus::Downloading,
+            cancel_tx: None,
+        }
+    }
+
+    #[test]
+    fn completed_record_has_file_path_and_completed_at() {
+        let r = history_record(&task("Zoo"), &Outcome::Completed(done().unwrap()), "T1");
+        assert_eq!(r.status, "completed");
+        assert_eq!(r.file_path.as_deref(), Some("/f"));
+        assert_eq!(r.completed_at.as_deref(), Some("T1"));
+        assert_eq!(r.error_message, None);
+        assert_eq!(r.title, "Zoo");
+    }
+
+    #[test]
+    fn record_keeps_task_fields() {
+        let t = task("Zoo");
+        let r = history_record(&t, &Outcome::Cancelled, "T1");
+        assert_eq!(r.id, t.id);
+        assert_eq!(r.url, t.url);
+        assert_eq!(r.quality, t.quality);
+        assert_eq!(r.output_path, t.output_path);
+        assert_eq!(r.thumbnail, t.thumbnail);
+        assert_eq!(r.created_at, t.created_at);
+    }
+
+    #[test]
+    fn failed_record_has_error_and_no_completed_at() {
+        let r = history_record(
+            &task("Zoo"),
+            &Outcome::Failed(AppError::NetworkError("x".into())),
+            "T1",
+        );
+        assert_eq!(r.status, "failed");
+        assert!(r.error_message.unwrap().contains('x'));
+        assert_eq!(r.file_path, None);
+        assert_eq!(r.completed_at, None);
+    }
+
+    #[test]
+    fn cancelled_record_is_not_failed() {
+        let r = history_record(&task("Zoo"), &Outcome::Cancelled, "T1");
+        assert_eq!(r.status, "cancelled");
+        assert_eq!(r.error_message, None);
+    }
+
+    #[test]
+    fn record_title_falls_back_to_printed_title_then_url() {
+        let completed = history_record(&task(""), &Outcome::Completed(done().unwrap()), "T1");
+        assert_eq!(completed.title, "t");
+        let cancelled = history_record(&task(""), &Outcome::Cancelled, "T1");
+        assert_eq!(cancelled.title, URL);
     }
 
     #[test]
