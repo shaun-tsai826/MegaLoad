@@ -171,44 +171,53 @@ export interface HistoryRecord {
 // ---------------------------------------------------------------------------
 // Tauri Event Payloads
 // ---------------------------------------------------------------------------
+// The Rust structs use `#[serde(rename_all = "camelCase")]`, so keys are camelCase.
 
 /**
  * Payload emitted by the Tauri backend on the `download://progress` event.
  */
 export interface DownloadProgressEvent {
-  task_id: string;
+  taskId: string;
   /** Percentage complete (0.0–100.0). */
   percent: number;
   /** Human-readable speed string (e.g. `"1.23MiB/s"`). */
   speed: string;
   /** Speed in bytes per second. */
-  speed_bytes: number;
+  speedBytes: number;
   /** Human-readable ETA string (e.g. `"00:23"`). */
   eta: string;
   /** ETA in seconds. */
-  eta_seconds: number;
+  etaSeconds: number;
 }
 
 /**
  * Payload emitted by the Tauri backend on the `download://completed` event.
  */
 export interface DownloadCompletedEvent {
-  task_id: string;
+  taskId: string;
   /** Absolute path of the completed download. */
-  file_path: string;
+  filePath: string;
   /** Video title. */
   title: string;
   /** ISO 8601 timestamp of completion. */
-  completed_at: string;
+  completedAt: string;
 }
 
 /**
  * Payload emitted by the Tauri backend on the `download://failed` event.
  */
 export interface DownloadFailedEvent {
-  task_id: string;
+  taskId: string;
   /** Structured error category. */
-  error_type: "NetworkError" | "AuthRequired" | "YtDlpError" | "Unknown" | "Cancelled";
+  errorType: "NetworkError" | "AuthRequired" | "YtDlpError" | "IoError" | "Unknown";
   /** Human-readable error description. */
   message: string;
+}
+
+/**
+ * Payload emitted by the Tauri backend on the `download://cancelled` event.
+ * Cancellation is a separate event so the task is marked `cancelled`, not `failed`.
+ */
+export interface DownloadCancelledEvent {
+  taskId: string;
 }

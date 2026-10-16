@@ -101,8 +101,13 @@
     - 實作 `#[tauri::command] async fn open_folder(app: AppHandle, path: String) -> Result<(), AppError>`，使用 `tauri_plugin_shell` 開啟系統檔案總管
     - _Requirements: 3.3, 3.4, 3.5, 5.3_
 
-- [ ] 5. 實作 `start_download` 與 `cancel_download` Commands
-  - [ ] 5.1 實作 `src-tauri/src/commands/download.rs` — `start_download`
+  - [x] 4.4 實作 `get_default_download_dir`（設計調整 #4）
+    - 在 `folder.rs` 實作 `#[tauri::command] async fn get_default_download_dir(app: AppHandle) -> Result<String, AppError>`，使用 `app.path().download_dir()`
+    - 在 `main.rs` 掛載
+    - _Requirements: 3.2_
+
+- [x] 5. 實作 `start_download` 與 `cancel_download` Commands
+  - [x] 5.1 實作 `src-tauri/src/commands/download.rs` — `start_download`
     - 定義 `DownloadState`（`Arc<Mutex<HashMap<String, DownloadTask>>>`），在 `main.rs` 以 `manage()` 掛載
     - 實作 `#[tauri::command] async fn start_download(app: AppHandle, state: State<DownloadState>, url: String, quality: QualityOption, output_path: String) -> Result<String, AppError>`
     - 生成 UUID 作為 `task_id`，插入 `DownloadState`
@@ -116,13 +121,14 @@
     - 驗證：對任意合法（url, quality, outputPath）組合，建立的 `DownloadTask` 必有唯一 UUID、`pending` 初始狀態，且三個欄位與傳入參數完全一致
     - **Validates: Requirements 4.1, 4.2**
 
-  - [ ] 5.3 實作 `cancel_download` command
+  - [x] 5.3 實作 `cancel_download` command
     - 實作 `#[tauri::command] async fn cancel_download(state: State<DownloadState>, task_id: String) -> Result<(), AppError>`
     - 從 `DownloadState` 取得 task，透過 `cancel_tx` channel 通知 Tokio task 終止 sidecar 子程序
-    - 子程序終止後 emit `download://failed`（errorType: `"Cancelled"`）
+    - ~~子程序終止後 emit `download://failed`（errorType: `"Cancelled"`）~~ → 依設計調整 #7 改為 emit 獨立的 `download://cancelled`（payload `{ taskId }`），狀態為 `cancelled`
+    - Unix 上以 SIGTERM 終止 yt-dlp（PyInstaller 單檔版收到 SIGKILL 會留下孤兒子程序繼續下載），5 秒後仍未結束才強制 kill
     - _Requirements: 4.1_
 
-  - [ ] 5.4 在 `main.rs` 掛載所有 Tauri Commands
+  - [x] 5.4 在 `main.rs` 掛載所有 Tauri Commands
     - 在 `src-tauri/src/commands/mod.rs` 重新匯出全部 commands
     - 在 `main.rs` 的 `invoke_handler!` 宏中掛載 `parse_video`、`start_download`、`cancel_download`、`select_folder`、`open_folder`
     - _Requirements: 2.1, 3.3, 4.1, 5.3_

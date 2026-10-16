@@ -1,4 +1,4 @@
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_shell::ShellExt;
 
@@ -24,6 +24,20 @@ pub async fn select_folder(app: AppHandle) -> Result<Option<String>, AppError> {
         Some(file_path) => Ok(Some(file_path.to_string())),
         None => Ok(None),
     }
+}
+
+/// Returns the platform's default download directory (e.g. `~/Downloads`).
+///
+/// Used by the frontend as the initial save path before the user picks a folder.
+///
+/// # Errors
+/// Returns `AppError::IoError` if the OS does not expose a download directory.
+#[tauri::command]
+pub async fn get_default_download_dir(app: AppHandle) -> Result<String, AppError> {
+    app.path()
+        .download_dir()
+        .map(|p| p.to_string_lossy().into_owned())
+        .map_err(|e| AppError::IoError(e.to_string()))
 }
 
 /// Opens the system file explorer at the given folder path.

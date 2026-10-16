@@ -54,6 +54,18 @@ impl AppError {
             AppError::YtDlpError(stderr.to_string())
         }
     }
+
+    /// The variant name, matching the `type` tag in the serialized JSON.
+    /// Used as `errorType` in the `download://failed` event payload.
+    pub fn kind(&self) -> &'static str {
+        match self {
+            AppError::AuthRequired => "AuthRequired",
+            AppError::YtDlpError(_) => "YtDlpError",
+            AppError::NetworkError(_) => "NetworkError",
+            AppError::IoError(_) => "IoError",
+            AppError::Unknown(_) => "Unknown",
+        }
+    }
 }
 
 // Tauri v2 allows commands to return `Result<T, E>` as long as `E: Serialize`.
@@ -98,6 +110,21 @@ mod tests {
     fn ytdlp_error_for_unknown_message() {
         let err = AppError::from_ytdlp_stderr("ERROR: Unsupported URL");
         assert!(matches!(err, AppError::YtDlpError(_)));
+    }
+
+    #[test]
+    fn kind_matches_serialized_type_tag() {
+        let cases = [
+            AppError::AuthRequired,
+            AppError::YtDlpError("x".into()),
+            AppError::NetworkError("x".into()),
+            AppError::IoError("x".into()),
+            AppError::Unknown("x".into()),
+        ];
+        for err in &cases {
+            let json = serde_json::to_value(err).unwrap();
+            assert_eq!(json["type"], err.kind());
+        }
     }
 
     #[test]

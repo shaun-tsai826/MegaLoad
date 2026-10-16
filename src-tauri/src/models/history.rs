@@ -4,10 +4,12 @@ use super::download_task::QualityOption;
 
 /// A completed, failed, or cancelled download record persisted to `history.json`.
 ///
-/// All field names use `snake_case` to match the JSON schema defined in the design document.
+/// Serialized with camelCase keys (`outputPath`, `filePath`, ...) to match `src/types/index.ts`,
+/// since Tauri does not rename command return values. The same format is used for `history.json`.
 /// This struct derives both `Serialize` and `Deserialize` so it can be written to and read from
 /// the history JSON file without loss of information.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct HistoryRecord {
     pub id: String,
     pub url: String,
@@ -79,15 +81,16 @@ mod tests {
     }
 
     #[test]
-    fn history_record_json_uses_snake_case_keys() {
+    fn history_record_json_uses_camel_case_keys() {
         let record = sample_record();
         let json = serde_json::to_string(&record).expect("serialization failed");
 
-        assert!(json.contains("\"output_path\""));
-        assert!(json.contains("\"file_path\""));
-        assert!(json.contains("\"error_message\""));
-        assert!(json.contains("\"created_at\""));
-        assert!(json.contains("\"completed_at\""));
+        assert!(json.contains("\"outputPath\""));
+        assert!(json.contains("\"filePath\""));
+        assert!(json.contains("\"errorMessage\""));
+        assert!(json.contains("\"createdAt\""));
+        assert!(json.contains("\"completedAt\""));
+        assert!(!json.contains("\"output_path\""));
     }
 
     #[test]

@@ -24,6 +24,11 @@ uuid = { version = "1", features = ["v4"] }
 tokio = { version = "1", features = ["full"] }
 regex = "1"
 thiserror = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+
+# 取消下載時對 yt-dlp 送 SIGTERM（PyInstaller 單檔版收到 SIGKILL 會留下孤兒子程序）
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
 
 [profile.dev]
 incremental = true
