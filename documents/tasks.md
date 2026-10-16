@@ -239,7 +239,7 @@
     - 在 `App.vue` `onMounted` 中呼叫此 composable，在 `onUnmounted` 中取消訂閱
     - _Requirements: 4.4, 4.5, 5.1, 7.1, 7.2_
 
-- [ ] 11. Checkpoint — 確認 Stores 與事件鏈路正常
+- [x] 11. Checkpoint — 確認 Stores 與事件鏈路正常
   - 執行 `npm run test --run` 確認所有 Vitest 測試通過
   - 以 Tauri dev 環境驗證 `start_download` 觸發後 Store 狀態正確更新
   - 確認所有測試通過，如有問題請向使用者反映。

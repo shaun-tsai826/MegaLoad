@@ -85,4 +85,5 @@
 - 修改 `src-tauri/` 後，`tauri dev` 會自動重建並重啟視窗。若畫面變成空白、Console 出現 `Could not connect to the server http://localhost:1420/`，代表 Vite 停掉了：按 `Ctrl+C` 停止後重新執行 `npm run tauri dev`（必要時用 `lsof -i :1420` 找出並結束舊程序）。
 - yt-dlp 第一次啟動需要解壓，回應會慢幾秒。
 - macOS 的 WKWebView Web Inspector 不支援在 Console 最上層寫 `await`，要包成 `(async () => { ... })()`。監聽事件可用 `__TAURI_INTERNALS__.invoke('plugin:event|listen', { event, target: { kind: 'Any' }, handler: __TAURI_INTERNALS__.transformCallback(fn) })`。
+- dev 模式下系統通知會以「終端機」的名義發出（tauri-plugin-notification 在 `is_dev()` 時使用 `com.apple.Terminal`），要到系統設定 → 通知 → 終端機開啟；打包後才會使用 App 自己的 identifier。
 - 下載出現 HTTP 403 時，先確認是不是 yt-dlp 版本太舊（見 Sidecar 一節）。
