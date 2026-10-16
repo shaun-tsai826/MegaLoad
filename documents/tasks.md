@@ -81,7 +81,7 @@
 
 ### Group 3：Tauri Commands 實作
 
-- [ ] 4. 實作 `parse_video` 與 `select_folder` / `open_folder` Commands
+- [x] 4. 實作 `parse_video` 與 `select_folder` / `open_folder` Commands
   - [x] 4.1 實作 `src-tauri/src/commands/parse.rs` — `parse_video`
     - 實作 `#[tauri::command] async fn parse_video(app: AppHandle, url: String) -> Result<VideoMetadata, AppError>`
     - 呼叫 sidecar 傳入 `["--no-warnings", "-J", &url]`，讀取完整 stdout JSON
@@ -96,9 +96,9 @@
     - 驗證：成功解析的 `VideoMetadata` 必含非空 `title`、非空 `thumbnail` URL，及至少一個 `QualityOption`
     - **Validates: Requirements 2.1, 2.3**
 
-  - [ ] 4.3 實作 `src-tauri/src/commands/folder.rs` — `select_folder` 與 `open_folder`
+  - [x] 4.3 實作 `src-tauri/src/commands/folder.rs` — `select_folder` 與 `open_folder`
     - 實作 `#[tauri::command] async fn select_folder(app: AppHandle) -> Result<Option<String>, AppError>`，使用 `tauri_plugin_dialog` 開啟原生資料夾選取對話框
-    - 實作 `#[tauri::command] async fn open_folder(app: AppHandle, path: String) -> Result<(), AppError>`，使用 `tauri_plugin_shell` 開啟系統檔案總管
+    - 實作 `#[tauri::command] async fn open_folder(app: AppHandle, path: String) -> Result<(), AppError>`，~~使用 `tauri_plugin_shell` 開啟系統檔案總管~~ → 依設計調整 #3 改用 `tauri-plugin-opener` 的 `reveal_item_in_dir`（傳入檔案路徑會在資料夾中選取該檔案）
     - _Requirements: 3.3, 3.4, 3.5, 5.3_
 
   - [x] 4.4 實作 `get_default_download_dir`（設計調整 #4）

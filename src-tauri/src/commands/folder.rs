@@ -1,6 +1,6 @@
 use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
-use tauri_plugin_shell::ShellExt;
+use tauri_plugin_opener::OpenerExt;
 
 use crate::error::AppError;
 
@@ -40,31 +40,31 @@ pub async fn get_default_download_dir(app: AppHandle) -> Result<String, AppError
         .map_err(|e| AppError::IoError(e.to_string()))
 }
 
-/// Opens the system file explorer at the given folder path.
+/// Reveals `path` in the system file explorer (Finder / Explorer).
 ///
-/// Delegates to the OS default handler for directories:
-/// - macOS: `open`
-/// - Windows: `explorer`
-/// - Linux: `xdg-open`
+/// Pass a downloaded file's path to open its folder with the file selected;
+/// a directory path opens its parent with the directory selected.
+///
+/// Uses `tauri-plugin-opener`'s `reveal_item_in_dir` rather than
+/// `tauri-plugin-shell`'s `open()`, whose default scope rejects local paths.
 ///
 /// # Errors
-/// Returns `AppError::IoError` if the shell `open` call fails (e.g., the path
-/// does not exist or the OS rejects the request).
+/// Returns `AppError::IoError` if the path does not exist or the OS rejects
+/// the request.
 ///
 /// # Requirements
-/// - 5.3: Tauri Backend opens system file explorer via Tauri Shell Plugin
+/// - 5.3: Tauri Backend opens the system file explorer at the download location
 #[tauri::command]
 pub async fn open_folder(app: AppHandle, path: String) -> Result<(), AppError> {
-    app.shell()
-        .open(&path, None)
-        .map_err(|e| AppError::IoError(e.to_string()))?;
-    Ok(())
+    app.opener()
+        .reveal_item_in_dir(&path)
+        .map_err(|e| AppError::IoError(e.to_string()))
 }
 
 #[cfg(test)]
 mod tests {
     // Integration tests for select_folder and open_folder require a live
-    // AppHandle with the dialog and shell plugins initialised, so they are
+    // AppHandle with the dialog and opener plugins initialised, so they are
     // exercised during manual / Tauri dev-mode testing.
     //
     // The unit-testable surface here is minimal: both commands are thin
