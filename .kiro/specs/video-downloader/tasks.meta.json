@@ -1,0 +1,511 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 初始化 Tauri v2 + Vue 3 + Vite 專案結構": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280197392
+      },
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280219669
+      },
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787281394686
+      }
+    ],
+    "1.3 安裝並設定 Pinia、Vue Router、Tailwind CSS": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280197556
+      },
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787281412250
+      },
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787282076261
+      }
+    ],
+    "1.4 設定 Rust 端依賴與目錄結構": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280197811
+      },
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280224191
+      },
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787281401377
+      }
+    ],
+    "2. Checkpoint — 確認專案可正常啟動": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280197891
+      },
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787282100932
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439104894
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439799474
+      }
+    ],
+    "3.1 實作 `src-tauri/src/sidecar.rs` — sidecar 啟動管理": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280197971
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439811433
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439836134
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788440138602
+      }
+    ],
+    "3.2 實作 `src-tauri/src/progress.rs` — stdout 進度解析": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198035
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439811507
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439842505
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788440142576
+      }
+    ],
+    "3.4 實作 `src-tauri/src/models/download_task.rs` 與 `src-tauri/src/models/history.rs`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198145
+      },
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787281412681
+      },
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787282077759
+      }
+    ],
+    "4.1 實作 `src-tauri/src/commands/parse.rs` — `parse_video`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198217
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439811649
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788440148838
+      }
+    ],
+    "4.3 實作 `src-tauri/src/commands/folder.rs` — `select_folder` 與 `open_folder`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198281
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439811722
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788440152802
+      }
+    ],
+    "5.1 實作 `src-tauri/src/commands/download.rs` — `start_download`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198354
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439811789
+      }
+    ],
+    "5.3 實作 `cancel_download` command": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198417
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439811853
+      }
+    ],
+    "5.4 在 `main.rs` 掛載所有 Tauri Commands": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198484
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439811917
+      }
+    ],
+    "6. Checkpoint — 確認後端 Commands 可正常呼叫": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198554
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439811982
+      }
+    ],
+    "7.1 實作 history JSON 讀寫輔助函式": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198662
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812045
+      }
+    ],
+    "7.3 實作 `get_history`、`delete_history_item`、`clear_all_history` commands": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198728
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812108
+      }
+    ],
+    "7.5 在 `start_download` 完成/失敗時寫入歷史記錄": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198797
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812243
+      }
+    ],
+    "8.1 建立 `src/stores/urlInput.ts`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198854
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812319
+      }
+    ],
+    "9.1 建立 `src/stores/downloadTask.ts`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198918
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812388
+      }
+    ],
+    "10.1 建立 `src/stores/history.ts`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280198985
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812448
+      }
+    ],
+    "10.3 建立 `src/composables/useTauriEvents.ts`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199095
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812513
+      }
+    ],
+    "11. Checkpoint — 確認 Stores 與事件鏈路正常": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199152
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812580
+      }
+    ],
+    "12.1 實作 `src/components/UrlInputBar.vue`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199202
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812642
+      }
+    ],
+    "12.2 實作 `src/components/VideoPreview.vue`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199252
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812710
+      }
+    ],
+    "13.1 實作 `src/components/DownloadTaskCard.vue`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199308
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812767
+      }
+    ],
+    "13.2 實作 `src/components/DownloadList.vue`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199406
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812834
+      }
+    ],
+    "13.3 實作 `src/views/HomeView.vue` — 組裝主頁": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199454
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812900
+      }
+    ],
+    "14.1 實作 `src/components/HistoryPage.vue`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199505
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439812958
+      }
+    ],
+    "14.2 組裝 `src/views/HistoryView.vue`": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199555
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439813026
+      }
+    ],
+    "15. Checkpoint — 確認完整 UI 流程可操作": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199606
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439813097
+      }
+    ],
+    "16.1 建立或更新 `default.json` 加入所有必要 permissions": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199660
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439813177
+      }
+    ],
+    "16.2 在 `tauri.conf.json` 設定 plugins 與 sidecar": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199709
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439813240
+      }
+    ],
+    "17. Checkpoint — 確認 Capability 設定無誤": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199757
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439813300
+      }
+    ],
+    "18.1 建立 workflow 骨架與 trigger 設定": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199849
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439813365
+      }
+    ],
+    "18.2 實作 CI steps：環境安裝與 yt-dlp sidecar 預下載": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199901
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439813428
+      }
+    ],
+    "18.3 實作 `tauri-apps/tauri-action@v0` 建構與 Draft Release 步驟": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280199950
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439813491
+      }
+    ],
+    "19. Final Checkpoint — 確認所有任務完成": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787280200001
+      },
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788439813548
+      }
+    ],
+    "1. 建立 Tauri v2 + Vue 3 + Vite 專案骨架": [
+      {
+        "executionId": "1e0780e7-bb8c-4866-ab9d-3b37e3d8b40b",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1787282076325
+      }
+    ],
+    "3. 實作 Rust 端 yt-dlp Sidecar 管理與進度解析": [
+      {
+        "executionId": "d955d2bf-b620-469c-8659-01cdf062b7b6",
+        "chatSessionId": "sess_0d98ccbc-312e-4f16-88c1-7e5ef31821c1",
+        "timestamp": 1788440142640
+      }
+    ]
+  }
+}
