@@ -33,7 +33,8 @@
 ## Sidecar
 
 - 放在 `src-tauri/binaries/`，依目標 triple 命名：`yt-dlp-x86_64-apple-darwin`（Intel Mac）、`yt-dlp-aarch64-apple-darwin`（Apple Silicon）、`yt-dlp-x86_64-pc-windows-msvc.exe`；ffmpeg 也用同樣的規則。
-- 二進位檔不提交 git（已列在 `.gitignore`）。本機執行 `npm run fetch-sidecars`（即 `scripts/fetch-sidecars.sh`，版本固定為 yt-dlp 2026.07.04、ffmpeg-static b6.1.1）；CI 可用同一支腳本並傳入 target triple。
+- 二進位檔不提交 git（已列在 `.gitignore`）。本機執行 `npm run fetch-sidecars`（即 `scripts/fetch-sidecars.sh`，版本固定為 yt-dlp 2026.08.19、ffmpeg-static b6.1.1）；CI 可用同一支腳本並傳入 target triple。
+- yt-dlp 舊版很快會被 YouTube 擋下：2026-10-16 時 2026.07.04 下載任何格式都回傳 HTTP 403，因此升到 2026.08.19。遇到 403 時先用最新版 yt-dlp 重現，再決定是否升級。
 - 開發機有 Intel Mac 與 M4 Mac mini 兩台：腳本要用 `rustc -vV` 的 host triple 判斷要下載哪個版本。
 
 ## 程式風格
@@ -61,14 +62,26 @@
 - `npm audit` 的 5 個漏洞都在開發工具（Vite 5 → esbuild、Vitest 1 → tinypool）。**不要執行 `npm audit fix --force`**（會直接跳到 Vite 8 / Vitest 5）；之後把 Vite、Vitest、`@vitejs/plugin-vue` 一起升到互相相容的版本。
 - npm 擋下 `esbuild`、`vue-demi` 的 install script，目前沒有影響；遇到 esbuild 錯誤時執行 `npm install-scripts approve esbuild`。
 
-**下一步：階段 1（後端 G3 + G4）**
-1. 新增 `get_default_download_dir`；`HistoryRecord` 與 event payload 改用 camelCase。
-2. 寫 `commands/download.rs`：`start_download`、`cancel_download`、`DownloadState`、進度事件；用 `--ffmpeg-location` 指向 ffmpeg sidecar（執行時的位置在主程式執行檔旁邊）。
-3. 寫 `commands/history.rs`，加上寫入鎖。
-4. `open_folder` 改用 `tauri-plugin-opener` 的 `reveal_item_in_dir`。
-5. 檢查點：在 Console 用 `invoke('start_download', …)` 實際下載一支影片，並以 `window.__TAURI_INTERNALS__` 監聽 `download://progress` 事件。
+**階段 1 已完成（2026-10-16，分支 `stage-1-backend`，尚未合併回 `main`）**：`cargo test` 84 項通過、無警告；Console 檢查點已實測完整下載、取消、下載失敗、歷史記錄 CRUD、`open_folder`。
+
+給前端（階段 2）的介面：
+- Commands：`get_default_download_dir`、`start_download({ url, quality, outputPath, title?, thumbnail? })` → `taskId`、`cancel_download({ taskId })`、`get_history`、`delete_history_item({ id })`、`clear_all_history`、`open_folder({ path })`（傳 `filePath` 會在 Finder 中選取該檔案）。`title`、`thumbnail` 請從 metadata 傳入，歷史記錄要用。
+- Events（payload 皆為 camelCase，型別在 `src/types/index.ts`）：`download://progress`、`download://completed`、`download://failed`，以及新增的 `download://cancelled`（`{ taskId }`）。每個任務結束時只會收到其中一個結束事件；取消**不會**送 `failed`。
+- 錯誤回傳格式為 `{ type, message }`（`type` 為 `AppError` 的 variant 名稱）。
+- 後端在任務結束時就已寫入 history.json；前端的 `appendRecord` 只需更新畫面。
+
+實作上的決定與已知行為：
+- history.json 位於 `app_data_dir()`，macOS 為 `~/Library/Application Support/com.video-downloader.app/history.json`（目錄名稱用的是 identifier，不是 design.md 寫的 productName）。格式為 `{ "version": 1, "records": [...] }`，camelCase、最新在前。
+- 下載完成時用 `--print after_move:MEGALOAD_DONE:%(.{title,filepath})j` 取得標題與最終路徑；`--print` 會隱含 `--quiet`，所以要加 `--progress`。
+- 影像與音訊分開下載，進度會從 0% 跑到 100% **兩次**；UI 要不要合併成一條進度，留到階段 3 再決定。
+- 取消時在 Unix 上送 SIGTERM，因為 PyInstaller 單檔版收到 SIGKILL 會留下孤兒子程序繼續下載（已實測）。Windows 上直接呼叫 `kill()`，**尚未在 Windows 驗證**是否會留下子程序。取消後 `.part` 檔會保留，供重試時續傳。
+- 尚未驗證：`select_folder` 對話框、`parse_video` 給無效 URL 的情況（tasks.md 的 6. Checkpoint 因此還沒勾）。
+
+**下一步：階段 2（Pinia Stores，G5）**：`urlInput`、`downloadTask`、`history` stores 與 `useTauriEvents`（要另外處理 `download://cancelled`）。
 
 ## 測試時的注意事項
 
 - 修改 `src-tauri/` 後，`tauri dev` 會自動重建並重啟視窗。若畫面變成空白、Console 出現 `Could not connect to the server http://localhost:1420/`，代表 Vite 停掉了：按 `Ctrl+C` 停止後重新執行 `npm run tauri dev`（必要時用 `lsof -i :1420` 找出並結束舊程序）。
 - yt-dlp 第一次啟動需要解壓，回應會慢幾秒。
+- macOS 的 WKWebView Web Inspector 不支援在 Console 最上層寫 `await`，要包成 `(async () => { ... })()`。監聽事件可用 `__TAURI_INTERNALS__.invoke('plugin:event|listen', { event, target: { kind: 'Any' }, handler: __TAURI_INTERNALS__.transformCallback(fn) })`。
+- 下載出現 HTTP 403 時，先確認是不是 yt-dlp 版本太舊（見 Sidecar 一節）。

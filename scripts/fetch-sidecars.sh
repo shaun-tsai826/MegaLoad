@@ -6,10 +6,10 @@
 #   bash scripts/fetch-sidecars.sh x86_64-apple-darwin   # 指定 target（CI 用）
 #
 # 版本固定於下方；要升級時修改這兩個變數，或以環境變數覆寫：
-#   YTDLP_VERSION=2026.07.04 FFMPEG_STATIC_TAG=b6.1.1 bash scripts/fetch-sidecars.sh
+#   YTDLP_VERSION=2026.08.19 FFMPEG_STATIC_TAG=b6.1.1 bash scripts/fetch-sidecars.sh
 set -euo pipefail
 
-YTDLP_VERSION="${YTDLP_VERSION:-2026.07.04}"
+YTDLP_VERSION="${YTDLP_VERSION:-2026.08.19}"
 FFMPEG_STATIC_TAG="${FFMPEG_STATIC_TAG:-b6.1.1}"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
