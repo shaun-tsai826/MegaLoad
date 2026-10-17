@@ -21,7 +21,7 @@
 ## 已決定的設計調整（優先於 design.md）
 
 1. **加入 ffmpeg sidecar**：合併 `bestvideo+bestaudio` 與 MP3 轉檔都需要 ffmpeg。呼叫 yt-dlp 時傳入 `--ffmpeg-location`。
-2. **前後端命名**：回傳給前端的 Rust struct（`VideoMetadata`、`HistoryRecord`、event payload）一律加上 `#[serde(rename_all = "camelCase")]`，與 `src/types/index.ts` 一致。Tauri 只會自動轉換 command 的傳入參數，不會轉換回傳值。history.json 的鍵名格式尚未決定。
+2. **前後端命名**：回傳給前端的 Rust struct（`VideoMetadata`、`HistoryRecord`、event payload）一律加上 `#[serde(rename_all = "camelCase")]`，與 `src/types/index.ts` 一致。Tauri 只會自動轉換 command 的傳入參數，不會轉換回傳值。history.json 也使用 camelCase（階段 1 決定）。
 3. **開啟檔案位置**：改用 `tauri-plugin-opener` 的 `reveal_item_in_dir`，不要用 `tauri-plugin-shell` 的 `open()`（它的預設 scope 會擋下本機路徑）。
 4. **預設下載路徑**：新增 `get_default_download_dir` command，使用 `app.path().download_dir()`。
 5. **history.json 寫入**：多個下載任務會同時寫入，必須用 Mutex 讓寫入依序進行。
@@ -29,6 +29,7 @@
 7. **取消下載**：狀態標記為 `cancelled`，不要標記為 `failed`。
 8. **Capability**：Rust 端直接呼叫 plugin 不受 capability 限制，前端只開放實際需要的權限（預期為 `core:default`、`notification:default`）。設定前先對照 Tauri v2 實際的權限名稱。
 9. **yt-dlp 版本**：CI 中固定版本號，不要用 `latest`。
+10. **MP3 下載參數**：`audio_mp3` 除了 `-f bestaudio/best`，還要加上 `-x --audio-format mp3`，輸出才會是 `.mp3`（只用 `-f` 會得到原始的 `.m4a`/`.webm`）。
 
 ## Sidecar
 
@@ -62,7 +63,7 @@
 - `npm audit` 的 5 個漏洞都在開發工具（Vite 5 → esbuild、Vitest 1 → tinypool）。**不要執行 `npm audit fix --force`**（會直接跳到 Vite 8 / Vitest 5）；之後把 Vite、Vitest、`@vitejs/plugin-vue` 一起升到互相相容的版本。
 - npm 擋下 `esbuild`、`vue-demi` 的 install script，目前沒有影響；遇到 esbuild 錯誤時執行 `npm install-scripts approve esbuild`。
 
-**階段 1 已完成（2026-10-16，分支 `stage-1-backend`，尚未合併回 `main`）**：`cargo test` 84 項通過、無警告；Console 檢查點已實測完整下載、取消、下載失敗、歷史記錄 CRUD、`open_folder`。
+**階段 1 已完成（2026-10-16，已合併回 `main`）**：`cargo test` 84 項通過、無警告；Console 檢查點已實測完整下載、取消、下載失敗、歷史記錄 CRUD、`open_folder`。
 
 給前端（階段 2）的介面：
 - Commands：`get_default_download_dir`、`start_download({ url, quality, outputPath, title?, thumbnail? })` → `taskId`、`cancel_download({ taskId })`、`get_history`、`delete_history_item({ id })`、`clear_all_history`、`open_folder({ path })`（傳 `filePath` 會在 Finder 中選取該檔案）。`title`、`thumbnail` 請從 metadata 傳入，歷史記錄要用。
@@ -74,11 +75,21 @@
 - history.json 位於 `app_data_dir()`，macOS 為 `~/Library/Application Support/com.video-downloader.app/history.json`（目錄名稱用的是 identifier，不是 design.md 寫的 productName）。格式為 `{ "version": 1, "records": [...] }`，camelCase、最新在前。
 - 下載完成時用 `--print after_move:MEGALOAD_DONE:%(.{title,filepath})j` 取得標題與最終路徑；`--print` 會隱含 `--quiet`，所以要加 `--progress`。
 - 輸出檔名帶上**實際下載的高度**（`標題 [720p].mp4`，選 1080p 但影片只有 480p 時會標 `[480p]`），MP3 為 `標題 [MP3].mp3`。原因：yt-dlp 看到同名檔案會跳過下載，舊的 `%(title)s.%(ext)s` 會讓不同畫質共用檔名，回報的其實是舊檔。同一畫質重複下載時仍會直接回報完成，不會有進度事件。
-- 影像與音訊分開下載，進度會從 0% 跑到 100% **兩次**；UI 要不要合併成一條進度，留到階段 3 再決定。
+- 影像與音訊分開下載，進度會從 0% 跑到 100% **兩次**；階段 3 決定不合併，改為偵測進度重新起算並在卡片上標示「（第 N 段）」（`DownloadTask.segment`）。
 - 取消時在 Unix 上送 SIGTERM，因為 PyInstaller 單檔版收到 SIGKILL 會留下孤兒子程序繼續下載（已實測）。Windows 上直接呼叫 `kill()`，**尚未在 Windows 驗證**是否會留下子程序。取消後 `.part` 檔會保留，供重試時續傳。
-- 尚未驗證：`select_folder` 對話框、`parse_video` 給無效 URL 的情況（tasks.md 的 6. Checkpoint 因此還沒勾）。
+- 尚未驗證：`parse_video` 給格式正確但不存在的影片網址時的錯誤顯示（tasks.md 的 6. Checkpoint 因此還沒勾；`select_folder` 已在階段 3 的檢查點驗證）。
 
-**下一步：階段 2（Pinia Stores，G5）**：`urlInput`、`downloadTask`、`history` stores 與 `useTauriEvents`（要另外處理 `download://cancelled`）。
+**階段 2 已完成（2026-10-17，已合併回 `main`）**：`urlInput`、`downloadTask`、`history` stores 與 `useTauriEvents`（在 `App.vue` 掛載，含 `download://cancelled`）。11. Checkpoint 已在 App 中實測：進度會送進 store，完成後會寫入歷史。
+- `utils/appError.ts`：`toAppError()` 正規化 `invoke` 的錯誤；`describeError()` 產生與 Rust `#[error(...)]` 一致的中文訊息（command 錯誤的 `message` 只有原始內容，例如 `AuthRequired` 沒有 message）。
+- `urlInput.reset()` 保留 `selectedPath`；URL 變更時會清掉舊的 metadata；`loadDefaultPath()` 會呼叫 `get_default_download_dir`。
+- `downloadTask.cancelTask()` 只通知後端，狀態要等 `download://cancelled` 到達才會改變。`retryTask()` 會以原始參數重新下載，並取代原本的卡片。
+
+**階段 3 已完成（2026-10-17，分支 `stage-3-ui`，尚未合併回 `main`）**：`UrlInputBar`、`VideoPreview`、`DownloadTaskCard`、`DownloadList`、`HistoryPage`，以及組裝好的 `HomeView`、`HistoryView`。前端測試 60 項通過，15. Checkpoint 已在 App 中完整操作過。
+- 速度以 `speedBytes` 換算為 KB/s、MB/s（需求 4.3），不使用 yt-dlp 的 `MiB/s` 字串。
+- 「清除全部歷史」使用卡片內的兩段式確認，不用 `window.confirm()`（WKWebView 的 JS 對話框不一定能用）。
+- 歷史頁按「重試」後會跳回首頁，讓使用者看到新任務的進度。
+
+**下一步：階段 4（Capability 與本機打包，G7）**：tasks.md 的 16、17。注意 16.1 列出的權限（`shell:allow-execute`、`fs:*`、`dialog:allow-open` 等）是 Kiro 的舊設計；依設計調整 #8，前端目前只直接用到 `core:default`（invoke、event）與 `notification:default`，dialog、opener、shell、fs 都只在 Rust 端呼叫。設定前先跑一次 `npm run tauri build`，確認實際缺少哪些權限。
 
 ## 測試時的注意事項
 

@@ -520,6 +520,7 @@ mod tests {
     #[test]
     fn mp3_adds_extract_audio_flags() {
         let args = args_for(QualityOption::AudioMp3);
+        assert_eq!(value_of(&args, "-f"), Some("bestaudio/best"));
         assert!(args.iter().any(|a| a == "-x"));
         assert_eq!(value_of(&args, "--audio-format"), Some("mp3"));
     }
