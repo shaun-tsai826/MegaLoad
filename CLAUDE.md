@@ -96,10 +96,18 @@
 - App 目前**沒有簽章**：在本機執行沒問題，傳到其他 Mac 會被 Gatekeeper 擋下，要在 CI 設定 Apple 憑證（tasks.md 18.3）。
 - 已移除未使用的 `tauri-plugin-fs`（Rust）以及前端的 `@tauri-apps/plugin-dialog`、`plugin-fs`、`plugin-shell`（history 用的是 `std::fs`）。Rust 的 `tauri-plugin-shell`（sidecar）與 `tauri-plugin-dialog`（`select_folder`）仍在使用。前端只剩 `@tauri-apps/api` 與 `@tauri-apps/plugin-notification`。
 
-**下一步：階段 5（CI/CD，G8）**：tasks.md 的 18、19。注意事項：
-- 設計調整 #9：yt-dlp 要固定版本，直接呼叫 `bash scripts/fetch-sidecars.sh <target-triple>`，不要照 tasks.md 18.1、18.2 在 matrix 裡寫 `yt_dlp_url` 或用 `latest`；ffmpeg 也由同一支腳本下載。
-- macOS 的 aarch64 與 x86_64 要分別用對應的 triple 執行腳本（`macos-latest` 是 Apple Silicon，交叉編譯 x86_64 時要 `rustup target add x86_64-apple-darwin`）。
-- Windows 的 `scripts/fetch-sidecars.sh` 要在 Git Bash（`shell: bash`）下執行。
+**階段 5 已完成（2026-10-17，本機驗證）**：`.github/workflows/release.yml`，推送 `v*.*.*` tag 時觸發，流程為 `test` → `build`（matrix）→ `release`。
+- `build` 只打包並上傳 artifact，三個目標都成功後，`release` 才用 `gh release create --draft` 建立 Draft Release（需求 8.5）。沒有使用 tauri-action，因為它會在每個 matrix job 各自建立 Release。
+- sidecar 用 `bash scripts/fetch-sidecars.sh <triple>` 下載（Windows 也用 `shell: bash`）。腳本只在 target 等於 host 時才執行驗證，所以在 Apple Silicon runner 上交叉編譯 x86_64 不會失敗。
+- `test` job 會先檢查 tag 與 `tauri.conf.json` 的 `version` 是否一致。**發版前要先改 `tauri.conf.json`（以及 `package.json`、`Cargo.toml`）的版本號**，再打 tag。
+- Apple 簽章：只有設定 `APPLE_CERTIFICATE` 等 secrets 時才會簽章；有 `APPLE_ID` 時才會公證。未設定時產出未簽章的 .dmg，並在 log 中顯示 warning。
+- 本機驗證：actionlint 1.7.12 無錯誤；三段 shell 腳本（版本檢查、簽章設定、建立 Release）已用假環境變數實測；`--target x86_64-apple-darwin` 打包確認產物路徑與 workflow 的 glob 一致；三個平台的 sidecar 下載網址都可存取。
+- actionlint：Homebrew 版在這台 Intel Mac 上會從原始碼編譯 GHC 等依賴（要好幾個小時），請改用 GitHub release 的官方執行檔。
+
+**下一步**：
+1. 在 GitHub 建立 repo、設定 remote 並推送，然後推一個測試 tag（例如先把版本改成 `0.1.1`，再推 `v0.1.1`），實際跑一次 workflow。**尚未在 GitHub 上執行過。**
+2. 尚待驗證：Windows 版的取消下載是否會留下 yt-dlp 子程序；`parse_video` 給格式正確但不存在的網址（tasks.md 6. Checkpoint）。
+3. 選用的 Rust property test（tasks.md 1.5、3.3、4.2、5.2、7.2、7.4）尚未以 proptest 實作。Property 6、11 已在前端 store 以 fast-check 涵蓋。
 
 ## 測試時的注意事項
 

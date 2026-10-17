@@ -18,7 +18,8 @@
     - 建立 `src/utils/urlValidator.ts`，實作 `validateUrl(input: string): boolean`（使用原生 URL constructor）
     - _Requirements: 1.1, 1.2_
 
-  - [ ]* 1.2 為 `validateUrl` 撰寫 property test
+  - [x]* 1.2 為 `validateUrl` 撰寫 property test
+    - 已在 `src/components/__tests__/home.test.ts`（UrlInputBar 的 Property 1）實作
     - **Property 1: URL 驗證正確性**
     - 使用 fast-check，對任意字串輸入驗證：回傳 `true` 時必為合法 http/https URL，回傳 `false` 時按鈕必停用
     - **Validates: Requirements 1.2, 1.3, 1.4**
@@ -328,28 +329,33 @@
 
 ### Group 8：GitHub Actions CI/CD
 
-- [ ] 18. 建立 `.github/workflows/release.yml` — Matrix Build + Draft Release
-  - [ ] 18.1 建立 workflow 骨架與 trigger 設定
+- [x] 18. 建立 `.github/workflows/release.yml` — Matrix Build + Draft Release
+  - 實作調整：改為 `test` → `build`（matrix，只打包並上傳 artifact）→ `release`（三個都成功才用 `gh release create --draft` 建立）。原本 18.3 在每個 matrix job 用 tauri-action 建立 Release，若其中一個目標失敗，會留下缺檔的 Draft Release，違反需求 8.5
+  - [x] 18.1 建立 workflow 骨架與 trigger 設定
+    - matrix 不帶 `yt_dlp_url`，改由 `scripts/fetch-sidecars.sh <triple>` 下載固定版本（設計調整 #9）；另加檢查：tag 必須與 `tauri.conf.json` 的 version 一致
     - 設定 `on.push.tags: ["v*.*.*"]` 觸發條件
     - 定義 `jobs.build` 含 `strategy.fail-fast: true`（確保任一 matrix 失敗不建立 Release）
     - 定義三個 matrix targets：`windows-latest`（x64）、`macos-latest`（aarch64）、`macos-latest`（x86_64）
     - 每個 matrix 攜帶 `yt_dlp_url` 與 `yt_dlp_filename` 變數
     - _Requirements: 8.1, 8.2, 8.5_
 
-  - [ ] 18.2 實作 CI steps：環境安裝與 yt-dlp sidecar 預下載
+  - [x] 18.2 實作 CI steps：環境安裝與 yt-dlp sidecar 預下載
+    - Node 22（Node 20 已於 2026-04 停止維護）；`dtolnay/rust-toolchain@stable` 以 `targets` 安裝交叉編譯 target；Windows 以 `shell: bash` 執行同一支腳本
     - 加入 `actions/checkout@v4`、`actions/setup-node@v4`（Node 20, npm cache）、`dtolnay/rust-toolchain@stable`
     - macOS target 額外執行 `rustup target add ${{ matrix.target }}`
     - 加入 `swatinem/rust-cache@v2`（`workspaces: "./src-tauri -> target"`）
     - 實作 Unix 步驟（`curl -L ... && chmod +x`）與 Windows 步驟（`Invoke-WebRequest` PowerShell）下載 yt-dlp 至 `src-tauri/binaries/`
     - _Requirements: 8.2, 8.3_
 
-  - [ ] 18.3 實作 `tauri-apps/tauri-action@v0` 建構與 Draft Release 步驟
+  - [x] 18.3 實作 `tauri-apps/tauri-action@v0` 建構與 Draft Release 步驟
+    - 改用 `npm run tauri build -- --target <triple>` 與 `gh release create`（見 18 的說明）。Apple secrets 只有設定時才寫入環境變數，未設定時產出未簽章的 .dmg
     - 設定 `tagName`、`releaseName`、`releaseBody`、`releaseDraft: true`、`prerelease: false`
     - 傳入 `args: --target ${{ matrix.target }}`
     - 設定必要 secrets env：`GITHUB_TOKEN`、`APPLE_CERTIFICATE`、`APPLE_CERTIFICATE_PASSWORD`、`APPLE_SIGNING_IDENTITY`、`APPLE_ID`、`APPLE_PASSWORD`、`APPLE_TEAM_ID`
     - _Requirements: 8.2, 8.4, 8.5_
 
-- [ ] 19. Final Checkpoint — 確認所有任務完成
+- [x] 19. Final Checkpoint — 確認所有任務完成
+  - 2026-10-17：cargo test 86 項、前端 60 項通過；`npm run tauri build`（含 `--target x86_64-apple-darwin`）成功；actionlint 1.7.12 無錯誤。**workflow 尚未在 GitHub 上實際執行過**（repo 尚未設定 remote）
   - 確認所有 Rust 與 TypeScript 測試通過（`cargo test` + `npm run test --run`）
   - 確認 `npm run tauri build` 在本地環境可成功編譯
   - 確認 `.github/workflows/release.yml` YAML 語法正確（可使用 `actionlint`）
