@@ -84,7 +84,7 @@
 - `urlInput.reset()` 保留 `selectedPath`；URL 變更時會清掉舊的 metadata；`loadDefaultPath()` 會呼叫 `get_default_download_dir`。
 - `downloadTask.cancelTask()` 只通知後端，狀態要等 `download://cancelled` 到達才會改變。`retryTask()` 會以原始參數重新下載，並取代原本的卡片。
 
-**階段 3 已完成（2026-10-17，分支 `stage-3-ui`，尚未合併回 `main`）**：`UrlInputBar`、`VideoPreview`、`DownloadTaskCard`、`DownloadList`、`HistoryPage`，以及組裝好的 `HomeView`、`HistoryView`。前端測試 60 項通過，15. Checkpoint 已在 App 中完整操作過。
+**階段 3 已完成（2026-10-17，已合併回 `main`）**：`UrlInputBar`、`VideoPreview`、`DownloadTaskCard`、`DownloadList`、`HistoryPage`，以及組裝好的 `HomeView`、`HistoryView`。前端測試 60 項通過，15. Checkpoint 已在 App 中完整操作過。
 - 速度以 `speedBytes` 換算為 KB/s、MB/s（需求 4.3），不使用 yt-dlp 的 `MiB/s` 字串。
 - 「清除全部歷史」使用卡片內的兩段式確認，不用 `window.confirm()`（WKWebView 的 JS 對話框不一定能用）。
 - 歷史頁按「重試」後會跳回首頁，讓使用者看到新任務的進度。
