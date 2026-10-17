@@ -94,6 +94,7 @@
 - Capability 維持 `core:default`、`notification:default`，不需要修改。前端只直接呼叫 `invoke`、`listen` 與 notification 的三個 API；tasks.md 16.1 列的 shell、fs、dialog 權限不需要加入。
 - 打包後 `yt-dlp`、`ffmpeg` 位於 `Contents/MacOS/`，與主程式 `app` 同一層，`ffmpeg_location()` 依此尋找 ffmpeg。
 - Bundle ID 為 `com.video-downloader.app`，dev 版與打包版共用同一份 history.json。
+- 2026-10-17 品牌更名：`productName` 與視窗標題改為 `MegaLoad`，打包產物變成 `MegaLoad.app`、`MegaLoad_<版本>_aarch64.dmg` 等。identifier 沒有改，所以 history.json 的位置不變。`package.json` 與 `Cargo.toml` 的套件名稱（`cross-platform-video-downloader`）只在內部使用，刻意保留不動。圖示的來源是根目錄的 `app-icon.svg`（紫、白、淺灰的「M＋下載箭頭」），修改後執行 `npm run tauri icon app-icon.svg` 重新產生。
 - App 目前**沒有簽章**：在本機執行沒問題，傳到其他 Mac 會被 Gatekeeper 擋下，要在 CI 設定 Apple 憑證（tasks.md 18.3）。
 - 已移除未使用的 `tauri-plugin-fs`（Rust）以及前端的 `@tauri-apps/plugin-dialog`、`plugin-fs`、`plugin-shell`（history 用的是 `std::fs`）。Rust 的 `tauri-plugin-shell`（sidecar）與 `tauri-plugin-dialog`（`select_folder`）仍在使用。前端只剩 `@tauri-apps/api` 與 `@tauri-apps/plugin-notification`。
 

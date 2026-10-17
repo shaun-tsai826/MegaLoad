@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- MegaLoad 圖示：紫色底、白色「M＋下載箭頭」、淺灰托盤。
+       重新產生各平台圖示：npm run tauri icon app-icon.svg -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8B5CF6" />
+      <stop offset="1" stop-color="#6D28D9" />
+    </linearGradient>
+  </defs>
+
+  <!-- 底：macOS 圖示格線的圓角方形（四周留 100px） -->
+  <rect x="100" y="100" width="824" height="824" rx="184" fill="url(#bg)" />
+
+  <!-- M：中間的 V 同時是箭頭的尖端 -->
+  <path
+    d="M312 660 V368 L512 584 L712 368 V660"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="76"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <!-- 箭頭的桿：從上方接到 V 的尖端 -->
+  <path d="M512 290 V584" fill="none" stroke="#FFFFFF" stroke-width="76" stroke-linecap="round" />
+
+  <!-- 托盤 -->
+  <rect x="300" y="716" width="424" height="56" rx="28" fill="#E5E7EB" />
+</svg>

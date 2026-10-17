@@ -1,5 +1,5 @@
 /**
- * Shared TypeScript type definitions for the Video Downloader application.
+ * Shared TypeScript type definitions for MegaLoad.
  *
  * These types are used across Pinia stores, Vue components, and composables to
  * ensure a consistent data contract between the frontend and the Tauri backend.

@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-50">
     <!-- Navigation bar -->
     <nav class="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-gray-800">Video Downloader</h1>
+      <h1 class="text-xl font-semibold text-gray-800">MegaLoad</h1>
       <RouterLink
         to="/history"
         class="text-blue-600 hover:text-blue-800 text-sm font-medium"

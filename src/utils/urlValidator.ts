@@ -1,5 +1,5 @@
 /**
- * URL validation utility for the Video Downloader application.
+ * URL validation utility for MegaLoad.
  *
  * Uses the native `URL` constructor (available in all modern browsers and
  * Node.js) to validate URL structure, then confirms the protocol is HTTP or
