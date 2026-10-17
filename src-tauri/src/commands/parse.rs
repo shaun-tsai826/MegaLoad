@@ -100,11 +100,15 @@ pub(crate) fn parse_metadata_json(json: &str) -> Result<VideoMetadata, AppError>
 
 /// Derives the list of available quality strings from the yt-dlp `formats` array.
 ///
-/// Video quality labels are included when at least one format entry has a
-/// `height` value meeting or exceeding the threshold:
-/// - `"1080p"` → height ≥ 1080
-/// - `"720p"`  → height ≥ 720
-/// - `"480p"`  → height ≥ 480
+/// Video quality labels are included when at least one format's resolution
+/// meets or exceeds the threshold:
+/// - `"1080p"` → resolution ≥ 1080
+/// - `"720p"`  → resolution ≥ 720
+/// - `"480p"`  → resolution ≥ 480
+///
+/// Resolution is the shorter side (`min(width, height)`), matching yt-dlp's
+/// `res` sort field, so a 720x1280 portrait video offers 720p rather than 1080p.
+/// Formats without a width fall back to their height.
 ///
 /// `"audio_mp3"` is always appended — audio extraction is always available.
 pub(crate) fn determine_available_qualities(
@@ -115,7 +119,10 @@ pub(crate) fn determine_available_qualities(
     if let Some(formats) = formats {
         let heights: Vec<u64> = formats
             .iter()
-            .filter_map(|f| f["height"].as_u64())
+            .filter_map(|f| {
+                let height = f["height"].as_u64()?;
+                Some(f["width"].as_u64().map_or(height, |w| w.min(height)))
+            })
             .collect();
 
         if heights.iter().any(|&h| h >= 1080) {
@@ -184,6 +191,29 @@ mod tests {
         ];
         let result = determine_available_qualities(Some(&formats));
         assert_eq!(result, vec!["720p", "480p", "audio_mp3"]);
+    }
+
+    #[test]
+    fn portrait_videos_use_the_shorter_side() {
+        // Instagram reel: 720x1280 and 1080x1920 → 1080p is the short side 1080.
+        let formats = vec![
+            serde_json::json!({"width": 720, "height": 1280}),
+            serde_json::json!({"width": 1080, "height": 1920}),
+        ];
+        let q = determine_available_qualities(Some(&formats));
+        assert_eq!(q, vec!["1080p", "720p", "480p", "audio_mp3"]);
+
+        // Short side 720 must not offer 1080p even though the height is 1280.
+        let formats = vec![serde_json::json!({"width": 720, "height": 1280})];
+        let q = determine_available_qualities(Some(&formats));
+        assert_eq!(q, vec!["720p", "480p", "audio_mp3"]);
+    }
+
+    #[test]
+    fn landscape_videos_use_the_height() {
+        let formats = vec![serde_json::json!({"width": 1280, "height": 720})];
+        let q = determine_available_qualities(Some(&formats));
+        assert_eq!(q, vec!["720p", "480p", "audio_mp3"]);
     }
 
     #[test]

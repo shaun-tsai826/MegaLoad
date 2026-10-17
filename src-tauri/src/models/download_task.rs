@@ -19,18 +19,30 @@ pub enum QualityOption {
 
 impl QualityOption {
     /// Returns the yt-dlp `-f` format selector string for this quality option.
+    ///
+    /// Video qualities use yt-dlp's default selector and pick the resolution
+    /// through `sort_order()` instead of `[height<=N]` filters: filters drop
+    /// portrait videos (a 1080x1920 Instagram reel has height 1920) and formats
+    /// whose height is unknown, which made the download fail with
+    /// "Requested format is not available".
     pub fn format_selector(&self) -> &'static str {
         match self {
-            QualityOption::Q1080p => {
-                "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080]"
-            }
-            QualityOption::Q720p => {
-                "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]"
-            }
-            QualityOption::Q480p => {
-                "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480]"
-            }
             QualityOption::AudioMp3 => "bestaudio/best",
+            _ => "bv*+ba/b",
+        }
+    }
+
+    /// Returns the yt-dlp `-S` sort order, or `None` for audio.
+    ///
+    /// `res` is the shorter side, so `res:1080` means "largest up to 1080p" for
+    /// both landscape and portrait videos. Sorting only ranks formats, so a
+    /// video without a matching resolution still downloads the closest one.
+    pub fn sort_order(&self) -> Option<&'static str> {
+        match self {
+            QualityOption::Q1080p => Some("res:1080,ext:mp4:m4a"),
+            QualityOption::Q720p => Some("res:720,ext:mp4:m4a"),
+            QualityOption::Q480p => Some("res:480,ext:mp4:m4a"),
+            QualityOption::AudioMp3 => None,
         }
     }
 }
@@ -85,18 +97,35 @@ mod tests {
     }
 
     #[test]
-    fn quality_option_1080p_contains_height_constraint() {
-        assert!(QualityOption::Q1080p.format_selector().contains("1080"));
+    fn quality_option_1080p_sorts_by_resolution() {
+        assert_eq!(QualityOption::Q1080p.sort_order(), Some("res:1080,ext:mp4:m4a"));
+        assert_eq!(QualityOption::Q1080p.format_selector(), "bv*+ba/b");
     }
 
     #[test]
-    fn quality_option_720p_contains_height_constraint() {
-        assert!(QualityOption::Q720p.format_selector().contains("720"));
+    fn quality_option_720p_sorts_by_resolution() {
+        assert_eq!(QualityOption::Q720p.sort_order(), Some("res:720,ext:mp4:m4a"));
+        assert_eq!(QualityOption::Q720p.format_selector(), "bv*+ba/b");
     }
 
     #[test]
-    fn quality_option_480p_contains_height_constraint() {
-        assert!(QualityOption::Q480p.format_selector().contains("480"));
+    fn quality_option_480p_sorts_by_resolution() {
+        assert_eq!(QualityOption::Q480p.sort_order(), Some("res:480,ext:mp4:m4a"));
+        assert_eq!(QualityOption::Q480p.format_selector(), "bv*+ba/b");
+    }
+
+    #[test]
+    fn video_selectors_do_not_filter_by_height() {
+        // Height filters exclude portrait videos; resolution is chosen by sort order.
+        for q in [QualityOption::Q1080p, QualityOption::Q720p, QualityOption::Q480p] {
+            assert!(!q.format_selector().contains("height"));
+        }
+    }
+
+    #[test]
+    fn audio_has_no_sort_order() {
+        assert_eq!(QualityOption::AudioMp3.format_selector(), "bestaudio/best");
+        assert_eq!(QualityOption::AudioMp3.sort_order(), None);
     }
 
     #[test]

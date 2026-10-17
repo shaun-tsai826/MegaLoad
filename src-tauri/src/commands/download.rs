@@ -233,6 +233,10 @@ pub(crate) fn build_download_args(
     .map(String::from)
     .collect();
 
+    if let Some(sort) = quality.sort_order() {
+        args.extend(["-S", sort].map(String::from));
+    }
+
     if *quality == QualityOption::AudioMp3 {
         args.extend(["-x", "--audio-format", "mp3"].map(String::from));
     }
@@ -523,6 +527,22 @@ mod tests {
         assert_eq!(value_of(&args, "-f"), Some("bestaudio/best"));
         assert!(args.iter().any(|a| a == "-x"));
         assert_eq!(value_of(&args, "--audio-format"), Some("mp3"));
+    }
+
+    #[test]
+    fn video_qualities_sort_by_resolution() {
+        for (q, sort) in [
+            (QualityOption::Q1080p, "res:1080,ext:mp4:m4a"),
+            (QualityOption::Q720p, "res:720,ext:mp4:m4a"),
+            (QualityOption::Q480p, "res:480,ext:mp4:m4a"),
+        ] {
+            assert_eq!(value_of(&args_for(q), "-S"), Some(sort));
+        }
+    }
+
+    #[test]
+    fn mp3_has_no_sort_order() {
+        assert!(!args_for(QualityOption::AudioMp3).iter().any(|a| a == "-S"));
     }
 
     #[test]
