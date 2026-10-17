@@ -94,7 +94,7 @@
 - 打包後 `yt-dlp`、`ffmpeg` 位於 `Contents/MacOS/`，與主程式 `app` 同一層，`ffmpeg_location()` 依此尋找 ffmpeg。
 - Bundle ID 為 `com.video-downloader.app`，dev 版與打包版共用同一份 history.json。
 - App 目前**沒有簽章**：在本機執行沒問題，傳到其他 Mac 會被 Gatekeeper 擋下，要在 CI 設定 Apple 憑證（tasks.md 18.3）。
-- 尚未處理的清理：`tauri-plugin-fs`（Rust）以及 `@tauri-apps/plugin-dialog`、`plugin-fs`、`plugin-shell`（前端）都沒有被使用（history 用的是 `std::fs`），可以移除。
+- 已移除未使用的 `tauri-plugin-fs`（Rust）以及前端的 `@tauri-apps/plugin-dialog`、`plugin-fs`、`plugin-shell`（history 用的是 `std::fs`）。Rust 的 `tauri-plugin-shell`（sidecar）與 `tauri-plugin-dialog`（`select_folder`）仍在使用。前端只剩 `@tauri-apps/api` 與 `@tauri-apps/plugin-notification`。
 
 **下一步：階段 5（CI/CD，G8）**：tasks.md 的 18、19。注意事項：
 - 設計調整 #9：yt-dlp 要固定版本，直接呼叫 `bash scripts/fetch-sidecars.sh <target-triple>`，不要照 tasks.md 18.1、18.2 在 matrix 裡寫 `yt_dlp_url` 或用 `latest`；ffmpeg 也由同一支腳本下載。
