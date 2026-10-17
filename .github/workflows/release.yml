@@ -157,8 +157,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ls -lh dist
-          gh release create "$GITHUB_REF_NAME" dist/* \
+          # upload-artifact 會保留多個路徑的共同上層結構（Windows 的 artifact 內有 msi/、nsis/ 子資料夾），
+          # 所以要收集所有檔案，不能直接用 dist/*（gh 不接受資料夾）
+          assets=()
+          while IFS= read -r f; do assets+=("$f"); done < <(find dist -type f | sort)
+          if [[ ${#assets[@]} -eq 0 ]]; then
+            echo "::error::dist 中沒有任何安裝檔"
+            exit 1
+          fi
+          printf '附件：%s\n' "${assets[@]}"
+          gh release create "$GITHUB_REF_NAME" "${assets[@]}" \
             --repo "$GITHUB_REPOSITORY" \
             --draft \
             --title "MegaLoad $GITHUB_REF_NAME" \

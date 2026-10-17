@@ -104,8 +104,12 @@
 - 本機驗證：actionlint 1.7.12 無錯誤；三段 shell 腳本（版本檢查、簽章設定、建立 Release）已用假環境變數實測；`--target x86_64-apple-darwin` 打包確認產物路徑與 workflow 的 glob 一致；三個平台的 sidecar 下載網址都可存取。
 - actionlint：Homebrew 版在這台 Intel Mac 上會從原始碼編譯 GHC 等依賴（要好幾個小時），請改用 GitHub release 的官方執行檔。
 
+**GitHub**：`git@github.com:shaun-tsai826/MegaLoad.git`（Public）。2026-10-17 第一次推送 `v0.1.1`：test 與三個 build 都成功，release job 失敗。原因是 upload-artifact 會保留多個路徑的共同上層結構，Windows 的 artifact 內有 `msi/`、`nsis/` 子資料夾，`gh release create dist/*` 收到資料夾而失敗；已改用 `find dist -type f` 收集檔案。
+- 下載 job log 需要 repo 管理員權限；未登入時可用 `GET /repos/{owner}/{repo}/check-runs/{job_id}/annotations` 讀取錯誤摘要（公開 repo 不需登入）。
+- `actions/upload-artifact@v4`、`download-artifact@v4` 會出現 Node 20 已淘汰的警告（目前被強制改用 Node 24 執行，功能正常）。最新版為 v7、v8，升級前要先確認 `merge-multiple` 與路徑行為有沒有改變。
+
 **下一步**：
-1. 在 GitHub 建立 repo、設定 remote 並推送，然後推一個測試 tag（例如先把版本改成 `0.1.1`，再推 `v0.1.1`），實際跑一次 workflow。**尚未在 GitHub 上執行過。**
+1. 用修正後的 workflow 重新發版，確認會建立包含 4 個安裝檔的 Draft Release。
 2. 尚待驗證：Windows 版的取消下載是否會留下 yt-dlp 子程序；`parse_video` 給格式正確但不存在的網址（tasks.md 6. Checkpoint）。
 3. 選用的 Rust property test（tasks.md 1.5、3.3、4.2、5.2、7.2、7.4）尚未以 proptest 實作。Property 6、11 已在前端 store 以 fast-check 涵蓋。
 
