@@ -74,7 +74,8 @@
 實作上的決定與已知行為：
 - history.json 位於 `app_data_dir()`，macOS 為 `~/Library/Application Support/com.video-downloader.app/history.json`（目錄名稱用的是 identifier，不是 design.md 寫的 productName）。格式為 `{ "version": 1, "records": [...] }`，camelCase、最新在前。
 - 下載完成時用 `--print after_move:MEGALOAD_DONE:%(.{title,filepath})j` 取得標題與最終路徑；`--print` 會隱含 `--quiet`，所以要加 `--progress`。
-- 輸出檔名帶上**實際下載的高度**（`標題 [720p].mp4`，選 1080p 但影片只有 480p 時會標 `[480p]`），MP3 為 `標題 [MP3].mp3`。原因：yt-dlp 看到同名檔案會跳過下載，舊的 `%(title)s.%(ext)s` 會讓不同畫質共用檔名，回報的其實是舊檔。同一畫質重複下載時仍會直接回報完成，不會有進度事件。
+- 輸出檔名帶上**實際下載的解析度**（`標題 [1920x1080].mp4`、直式影片為 `標題 [1080x1920].mp4`；選 1080p 但影片只有 480p 時會標實際的解析度），解析度未知時不加標籤；MP3 為 `標題 [MP3].mp3`。（2026-10-17 由 `[高度p]` 改為完整解析度，因為直式影片會標成 `[1920p]`。）原因：yt-dlp 看到同名檔案會跳過下載，舊的 `%(title)s.%(ext)s` 會讓不同畫質共用檔名，回報的其實是舊檔。同一畫質重複下載時仍會直接回報完成，不會有進度事件。
+- 影片畫質用 `-f bv*+ba/b` 搭配 `-S res:N,ext:mp4:m4a` 選擇，**不要用 `[height<=N]` 過濾**：`res` 以短邊計算，直式影片（Instagram 等）才會正確；過濾也會排除高度未知的格式，導致 `Requested format is not available`。`parse_video` 的可用畫質同樣以短邊 `min(width, height)` 判斷。Instagram 只提供 VP9，部分播放器（Windows 內建播放器、舊版 QuickTime）可能無法播放。
 - 影像與音訊分開下載，進度會從 0% 跑到 100% **兩次**；階段 3 決定不合併，改為偵測進度重新起算並在卡片上標示「（第 N 段）」（`DownloadTask.segment`）。
 - 取消時在 Unix 上送 SIGTERM，因為 PyInstaller 單檔版收到 SIGKILL 會留下孤兒子程序繼續下載（已實測）。Windows 上直接呼叫 `kill()`，**尚未在 Windows 驗證**是否會留下子程序。取消後 `.part` 檔會保留，供重試時續傳。
 - 尚未驗證：`parse_video` 給格式正確但不存在的影片網址時的錯誤顯示（tasks.md 的 6. Checkpoint 因此還沒勾；`select_folder` 已在階段 3 的檢查點驗證）。

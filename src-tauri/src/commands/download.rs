@@ -33,13 +33,14 @@ const DONE_PREFIX: &str = "MEGALOAD_DONE:";
 /// The prefix keeps it distinguishable from progress lines.
 const DONE_PRINT_TEMPLATE: &str = "after_move:MEGALOAD_DONE:%(.{title,filepath})j";
 
-/// Output filename for video downloads, tagged with the height yt-dlp actually
-/// downloaded (e.g. `Title [720p].mp4`). Using the real height rather than the
-/// requested quality keeps the tag honest when the selector falls back to a
-/// lower resolution, and keeps different qualities from sharing one filename
-/// (yt-dlp skips a download whose file already exists). No tag if the height
-/// is unknown.
-const VIDEO_OUTPUT_TEMPLATE: &str = "%(title)s%(height& [{}p]|)s.%(ext)s";
+/// Output filename for video downloads, tagged with the resolution yt-dlp
+/// actually downloaded (e.g. `Title [1920x1080].mp4`, `Title [1080x1920].mp4`).
+/// The full resolution stays correct for portrait videos, where `[{height}p]`
+/// would read `[1920p]`, and when the sort order falls back to another
+/// resolution. It also keeps different qualities from sharing one filename
+/// (yt-dlp skips a download whose file already exists). No tag if the
+/// resolution is unknown.
+const VIDEO_OUTPUT_TEMPLATE: &str = "%(title)s%(resolution& [{}]|)s.%(ext)s";
 
 /// Output filename for MP3 downloads, e.g. `Title [MP3].mp3`.
 const AUDIO_OUTPUT_TEMPLATE: &str = "%(title)s [MP3].%(ext)s";
@@ -506,11 +507,13 @@ mod tests {
     }
 
     #[test]
-    fn video_filenames_are_tagged_with_actual_height() {
+    fn video_filenames_are_tagged_with_actual_resolution() {
         for q in [QualityOption::Q1080p, QualityOption::Q720p, QualityOption::Q480p] {
             assert_eq!(value_of(&args_for(q), "-o"), Some(VIDEO_OUTPUT_TEMPLATE));
         }
-        assert!(VIDEO_OUTPUT_TEMPLATE.contains("%(height"));
+        // `[1080x1920]`, not `[1920p]`, for portrait videos.
+        assert!(VIDEO_OUTPUT_TEMPLATE.contains("%(resolution& [{}]|)s"));
+        assert!(!VIDEO_OUTPUT_TEMPLATE.contains("height"));
     }
 
     #[test]
