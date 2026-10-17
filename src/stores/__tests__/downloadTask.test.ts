@@ -72,6 +72,17 @@ describe("events", () => {
     expect(task().errorMessage).toBeNull();
   });
 
+  it("counts a new segment when progress restarts", async () => {
+    const { store, id, task } = await startOne();
+    store.updateProgress(progress(id, 10));
+    store.updateProgress(progress(id, 99));
+    expect(task().segment).toBe(1);
+    store.updateProgress(progress(id, 2));
+    expect(task().segment).toBe(2);
+    store.updateProgress(progress(id, 1)); // small jitter is not a new segment
+    expect(task().segment).toBe(2);
+  });
+
   it("ignores progress after a task finished", async () => {
     const { store, id, task } = await startOne();
     store.markCancelled({ taskId: id });

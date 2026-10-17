@@ -12,15 +12,18 @@
     </nav>
 
     <!-- Main content -->
-    <main class="max-w-3xl mx-auto px-6 py-8">
-      <!-- URL Input, VideoPreview, and DownloadList components will be assembled here -->
-      <p class="text-gray-400 text-center text-sm mt-16">
-        請在上方輸入影音 URL 開始使用
-      </p>
+    <main class="max-w-3xl mx-auto px-6 py-8 space-y-6">
+      <UrlInputBar />
+      <VideoPreview />
+      <DownloadList />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
+
+import DownloadList from "@/components/DownloadList.vue";
+import UrlInputBar from "@/components/UrlInputBar.vue";
+import VideoPreview from "@/components/VideoPreview.vue";
 </script>

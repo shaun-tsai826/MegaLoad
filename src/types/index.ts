@@ -106,6 +106,12 @@ export interface DownloadTask {
   /** Estimated seconds remaining until download completes. */
   etaSeconds: number;
 
+  /**
+   * Which stream is downloading, starting at 1. Video downloads fetch the
+   * video and audio streams separately, so `percent` runs 0→100 once per stream.
+   */
+  segment: number;
+
   /** Absolute path of the downloaded file (populated on completion). */
   filePath: string | null;
 

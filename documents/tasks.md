@@ -248,14 +248,14 @@
 
 ### Group 6：Vue 3 前端 — UI 元件
 
-- [ ] 12. 實作 `UrlInputBar.vue` 與 `VideoPreview.vue`
-  - [ ] 12.1 實作 `src/components/UrlInputBar.vue`
+- [x] 12. 實作 `UrlInputBar.vue` 與 `VideoPreview.vue`
+  - [x] 12.1 實作 `src/components/UrlInputBar.vue`
     - 單行文字輸入欄位，`v-model` 雙向綁定 `urlInputStore.url`，`@input` 呼叫 `setUrl()`
     - URL 格式錯誤時顯示紅色錯誤訊息（條件渲染，`validationState === 'invalid'`）
     - 「解析影片」按鈕，`:disabled="!canParse || isParsing"`；解析中顯示 spinner
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.2_
 
-  - [ ] 12.2 實作 `src/components/VideoPreview.vue`
+  - [x] 12.2 實作 `src/components/VideoPreview.vue`
     - 顯示封面縮圖（`<img :src="metadata.thumbnail">`）、影片標題、上傳者
     - 畫質選擇器（radio group），選項依 `metadata.availableQualities` 產生，預設選取 `urlInputStore.selectedQuality`
     - 儲存路徑顯示欄位 + 「變更路徑」按鈕（呼叫 `urlInputStore.selectFolder()`），預設顯示 `~/Downloads`
@@ -263,33 +263,34 @@
     - `v-if="urlInputStore.hasMetadata"` 條件渲染，無 metadata 時不顯示
     - _Requirements: 2.3, 3.1, 3.2, 3.3, 3.4, 3.5, 4.1_
 
-- [ ] 13. 實作 `DownloadTaskCard.vue` 與 `DownloadList.vue`
-  - [ ] 13.1 實作 `src/components/DownloadTaskCard.vue`
+- [x] 13. 實作 `DownloadTaskCard.vue` 與 `DownloadList.vue`
+  - [x] 13.1 實作 `src/components/DownloadTaskCard.vue`
     - 顯示縮圖、影片標題、畫質、儲存路徑
     - 下載中狀態：進度條（`percent`）、即時速度（`speed`）、ETA，以及「取消」按鈕（呼叫 `cancelTask(task.id)`）
     - 完成狀態：進度條 100%、「已完成」文字、「開啟檔案位置」按鈕（invoke `open_folder`）
     - 失敗狀態：⚠ 圖示 + `errorMessage`、「重試」按鈕（以原始參數重新呼叫 `startDownload`）
+    - 實作調整：速度以 `speedBytes` 換算為 KB/s、MB/s；影像與音訊分段下載時顯示「（第 N 段）」（store 新增 `segment`）；結束後可移除卡片
     - _Requirements: 4.3, 5.2, 5.3, 7.2, 7.3_
 
-  - [ ] 13.2 實作 `src/components/DownloadList.vue`
+  - [x] 13.2 實作 `src/components/DownloadList.vue`
     - 以 `v-for` 渲染 `downloadTaskStore.taskList`，每筆使用 `DownloadTaskCard`
     - 無任務時顯示空狀態提示（`taskList.length === 0`）
     - _Requirements: 4.2, 4.3_
 
-  - [ ] 13.3 實作 `src/views/HomeView.vue` — 組裝主頁
+  - [x] 13.3 實作 `src/views/HomeView.vue` — 組裝主頁
     - 組合 `UrlInputBar`、`VideoPreview`、`DownloadList` 三個元件
     - 頂部導覽列含「歷史記錄」連結（`<router-link to="/history">`）
     - _Requirements: 1.1, 2.3, 4.2_
 
-- [ ] 14. 實作 `HistoryPage.vue` 與 `HistoryView.vue`
-  - [ ] 14.1 實作 `src/components/HistoryPage.vue`
+- [x] 14. 實作 `HistoryPage.vue` 與 `HistoryView.vue`
+  - [x] 14.1 實作 `src/components/HistoryPage.vue`
     - 頂部「清除全部歷史」按鈕（呼叫 `historyStore.clearAll()`）
     - 表格列每行：縮圖、標題、畫質、路徑、完成時間、狀態徽章（`completed`/`failed`/`cancelled`）
     - 每行操作按鈕：「清除」（`deleteRecord(record.id)`）；`failed`/`cancelled` 行額外顯示「重試」（`retryDownload(record)`）
     - `onMounted` 呼叫 `historyStore.loadHistory()`
     - _Requirements: 6.2, 6.3, 6.4, 6.5_
 
-  - [ ] 14.2 組裝 `src/views/HistoryView.vue`
+  - [x] 14.2 組裝 `src/views/HistoryView.vue`
     - 包含返回首頁連結與 `HistoryPage` 元件
     - _Requirements: 6.2_
 

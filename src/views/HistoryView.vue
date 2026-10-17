@@ -13,12 +13,13 @@
 
     <!-- Main content -->
     <main class="max-w-5xl mx-auto px-6 py-8">
-      <!-- HistoryPage component will be assembled here -->
-      <p class="text-gray-400 text-center text-sm mt-16">尚無下載歷史記錄</p>
+      <HistoryPage />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
+
+import HistoryPage from "@/components/HistoryPage.vue";
 </script>

@@ -37,6 +37,9 @@ export function toHistoryRecord(task: DownloadTask): HistoryRecord | null {
   };
 }
 
+/** How far `percent` must fall to count as a new stream rather than jitter. */
+const SEGMENT_DROP = 50;
+
 export const useDownloadTaskStore = defineStore("downloadTask", () => {
   // State: task id → task
   const tasks = ref(new Map<string, DownloadTask>());
@@ -87,6 +90,7 @@ export const useDownloadTaskStore = defineStore("downloadTask", () => {
       speed: "",
       speedBytes: 0,
       etaSeconds: 0,
+      segment: 1,
       filePath: null,
       errorMessage: null,
       errorType: null,
@@ -99,6 +103,10 @@ export const useDownloadTaskStore = defineStore("downloadTask", () => {
   function updateProgress(event: DownloadProgressEvent) {
     const task = tasks.value.get(event.taskId);
     if (!task || isFinished(task)) return;
+    // A large drop means the next stream (e.g. audio after video) has started.
+    if (task.status === "downloading" && event.percent + SEGMENT_DROP < task.percent) {
+      task.segment += 1;
+    }
     task.percent = event.percent;
     task.speed = event.speed;
     task.speedBytes = event.speedBytes;
