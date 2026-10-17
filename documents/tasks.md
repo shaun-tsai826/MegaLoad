@@ -303,8 +303,9 @@
 
 ### Group 7：Tauri v2 Capability 設定
 
-- [ ] 16. 設定 `src-tauri/capabilities/default.json`
-  - [ ] 16.1 建立或更新 `default.json` 加入所有必要 permissions
+- [x] 16. 設定 `src-tauri/capabilities/default.json`
+  - [x] 16.1 建立或更新 `default.json` 加入所有必要 permissions
+    - 實作調整（設計調整 #8）：只保留 `core:default`、`notification:default`。前端只直接呼叫 `invoke`、`listen` 與 notification 的 `isPermissionGranted`／`requestPermission`／`sendNotification`；sidecar、dialog、opener 都在 Rust 端呼叫，不受 capability 限制。以下列出的 shell、fs、dialog 權限不需要加入
     - 加入 `"core:default"`
     - 加入 `"shell:allow-execute"`（yt-dlp sidecar 執行）與 `"shell:allow-open"`（開啟檔案總管）
     - 加入 `"dialog:allow-open"`（原生資料夾選取對話框）
@@ -313,12 +314,13 @@
     - 確認 `windows: ["main"]`，並驗證 JSON schema 正確（`$schema: "../gen/schemas/desktop-schema.json"`）
     - _Requirements: 3.3, 5.1, 5.3, 6.1_
 
-  - [ ] 16.2 在 `tauri.conf.json` 設定 plugins 與 sidecar
+  - [x] 16.2 在 `tauri.conf.json` 設定 plugins 與 sidecar
+    - `externalBin` 為 `binaries/yt-dlp`、`binaries/ffmpeg`；打包後兩者都在 `Contents/MacOS/`，與主程式同一層。Tauri v2 的這些 plugin 不需要 `plugins` 設定區塊
     - 確認 `bundle.externalBin: ["binaries/yt-dlp"]` 宣告正確
     - 加入 `plugins.shell`、`plugins.dialog`、`plugins.fs`、`plugins.notification` 設定區塊
     - _Requirements: 2.1, 3.3, 5.3_
 
-- [ ] 17. Checkpoint — 確認 Capability 設定無誤
+- [x] 17. Checkpoint — 確認 Capability 設定無誤
   - 執行 `npm run tauri build` 確認打包時無 capability 缺失警告
   - 確認 sidecar 命名規範符合目標 triple，如有問題請向使用者反映。
 

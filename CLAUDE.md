@@ -89,7 +89,17 @@
 - 「清除全部歷史」使用卡片內的兩段式確認，不用 `window.confirm()`（WKWebView 的 JS 對話框不一定能用）。
 - 歷史頁按「重試」後會跳回首頁，讓使用者看到新任務的進度。
 
-**下一步：階段 4（Capability 與本機打包，G7）**：tasks.md 的 16、17。注意 16.1 列出的權限（`shell:allow-execute`、`fs:*`、`dialog:allow-open` 等）是 Kiro 的舊設計；依設計調整 #8，前端目前只直接用到 `core:default`（invoke、event）與 `notification:default`，dialog、opener、shell、fs 都只在 Rust 端呼叫。設定前先跑一次 `npm run tauri build`，確認實際缺少哪些權限。
+**階段 4 已完成（2026-10-17）**：`npm run tauri build` 在 Intel Mac 上成功（release 編譯約 4.5 分鐘），產出 `.app`（116 MiB）與 `.dmg`（62 MiB），位於 `src-tauri/target/release/bundle/`。打包版已實測：下載 1080p、MP3、系統通知、開啟檔案位置、歷史記錄都正常。
+- Capability 維持 `core:default`、`notification:default`，不需要修改。前端只直接呼叫 `invoke`、`listen` 與 notification 的三個 API；tasks.md 16.1 列的 shell、fs、dialog 權限不需要加入。
+- 打包後 `yt-dlp`、`ffmpeg` 位於 `Contents/MacOS/`，與主程式 `app` 同一層，`ffmpeg_location()` 依此尋找 ffmpeg。
+- Bundle ID 為 `com.video-downloader.app`，dev 版與打包版共用同一份 history.json。
+- App 目前**沒有簽章**：在本機執行沒問題，傳到其他 Mac 會被 Gatekeeper 擋下，要在 CI 設定 Apple 憑證（tasks.md 18.3）。
+- 尚未處理的清理：`tauri-plugin-fs`（Rust）以及 `@tauri-apps/plugin-dialog`、`plugin-fs`、`plugin-shell`（前端）都沒有被使用（history 用的是 `std::fs`），可以移除。
+
+**下一步：階段 5（CI/CD，G8）**：tasks.md 的 18、19。注意事項：
+- 設計調整 #9：yt-dlp 要固定版本，直接呼叫 `bash scripts/fetch-sidecars.sh <target-triple>`，不要照 tasks.md 18.1、18.2 在 matrix 裡寫 `yt_dlp_url` 或用 `latest`；ffmpeg 也由同一支腳本下載。
+- macOS 的 aarch64 與 x86_64 要分別用對應的 triple 執行腳本（`macos-latest` 是 Apple Silicon，交叉編譯 x86_64 時要 `rustup target add x86_64-apple-darwin`）。
+- Windows 的 `scripts/fetch-sidecars.sh` 要在 Git Bash（`shell: bash`）下執行。
 
 ## 測試時的注意事項
 
