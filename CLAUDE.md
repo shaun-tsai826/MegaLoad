@@ -108,8 +108,11 @@
 - 下載 job log 需要 repo 管理員權限；未登入時可用 `GET /repos/{owner}/{repo}/check-runs/{job_id}/annotations` 讀取錯誤摘要（公開 repo 不需登入）。
 - `actions/upload-artifact@v4`、`download-artifact@v4` 會出現 Node 20 已淘汰的警告（目前被強制改用 Node 24 執行，功能正常）。最新版為 v7、v8，升級前要先確認 `merge-multiple` 與路徑行為有沒有改變。
 
+- 2026-10-17 改發 `v0.1.2`：test、三個 build、release **全部成功**，有快取時約 9 分鐘（第一次約 25 分鐘）。舊的 `v0.1.1` tag 仍留在 GitHub 上，指向修正前的 commit。
+- 發版流程：在分支上把 `tauri.conf.json`、`package.json`（`npm version X --no-git-tag-version`）、`src-tauri/Cargo.toml` 改成新版號，跑 `cargo test` 讓 `Cargo.lock` 同步，合併回 `main` 後建立 `git tag -a vX -m ...`，再依序推送 `main` 與 tag。Draft Release 確認無誤後，到 GitHub 上手動 Publish。
+
 **下一步**：
-1. 用修正後的 workflow 重新發版，確認會建立包含 4 個安裝檔的 Draft Release。
+1. 檢查 `v0.1.2` 的 Draft Release 附件（`.msi`、`-setup.exe`、`_aarch64.dmg`、`_x64.dmg`），並在 Windows 與 Apple Silicon 上實際安裝測試。
 2. 尚待驗證：Windows 版的取消下載是否會留下 yt-dlp 子程序；`parse_video` 給格式正確但不存在的網址（tasks.md 6. Checkpoint）。
 3. 選用的 Rust property test（tasks.md 1.5、3.3、4.2、5.2、7.2、7.4）尚未以 proptest 實作。Property 6、11 已在前端 store 以 fast-check 涵蓋。
 
