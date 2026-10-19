@@ -383,7 +383,8 @@
   - [x] 21.4 建立 `src/components/PaginationBar.vue`，並在 `HistoryPage.vue` 改用 `pagedRecords`
     - _Requirements: 10.1, 10.2_
 
-- [ ] 22. Checkpoint — 在 App 中實測重新下載（檔案存在 / 不存在）與分頁（換頁、每頁筆數、刪除後回到有效頁面）
+- [x] 22. Checkpoint — 在 App 中實測重新下載（檔案存在 / 不存在）與分頁（換頁、每頁筆數、刪除後回到有效頁面）
+  - 2026-10-19：以 23 筆測試記錄實測，功能正常
 
 ---
 

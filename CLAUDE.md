@@ -116,7 +116,7 @@
 **歷史記錄重新下載與分頁（2026-10-19，需求 9、10，tasks.md Group 9）**：
 - 重新下載：已完成的記錄有「重新下載」。先以 `file_exists` 檢查原檔案：不存在就直接下載；存在則在該列詢問是否覆蓋，確認後以 `start_download({ ..., overwrite: true })` 加上 `--force-overwrites`。**不覆蓋時 yt-dlp 會因為同名檔案已存在而直接回報完成**，這就是需要覆蓋選項的原因（已實測）。
 - 分頁：每頁 5、10、20 筆（預設 10），存在 localStorage 的 `megaload.history.pageSize`；分頁狀態放在 `historyStore`，計算邏輯在 `src/utils/pagination.ts`，分頁列為 `PaginationBar.vue`（記錄超過 5 筆才顯示）。
-- 測試：cargo test 95 項、前端 87 項。
+- 測試：cargo test 95 項、前端 87 項；22. Checkpoint 已在 App 中以 23 筆測試記錄實測。
 
 **下一步**：
 1. 檢查 `v0.1.2` 的 Draft Release 附件（`.msi`、`-setup.exe`、`_aarch64.dmg`、`_x64.dmg`），並在 Windows 與 Apple Silicon 上實際安裝測試。
