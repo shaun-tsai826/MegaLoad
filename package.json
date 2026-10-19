@@ -8,8 +8,8 @@
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "test": "vitest",
-    "test:run": "vitest run",
+    "test": "NODE_OPTIONS=--no-experimental-webstorage vitest",
+    "test:run": "NODE_OPTIONS=--no-experimental-webstorage vitest run",
     "fetch-sidecars": "bash scripts/fetch-sidecars.sh"
   },
   "dependencies": {
