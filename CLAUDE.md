@@ -31,6 +31,19 @@
 9. **yt-dlp 版本**：CI 中固定版本號，不要用 `latest`。
 10. **MP3 下載參數**：`audio_mp3` 除了 `-f bestaudio/best`，還要加上 `-x --audio-format mp3`，輸出才會是 `.mp3`（只用 `-f` 會得到原始的 `.m4a`/`.webm`）。
 
+## 開發機
+
+兩台 Mac 之間只透過 git 同步，Claude 的記憶（`~/.claude/projects/.../memory/`）與對話紀錄不會同步，跨機器要知道的事請寫在本檔。
+
+- **2014 MacBook Pro**（Intel、`x86_64-apple-darwin`）：以 OCLP（OpenCore Legacy Patcher）升級到 macOS 15。Node 22、24、26 都有 Intel Mac 版本，且最低 macOS 版本都低於 15；Rust 的 `x86_64-apple-darwin` 仍有官方工具鏈。要注意的主要是 OCLP 本身（顯示卡等驅動，以及系統大改版後要重新修補）。
+- **M4 Mac mini**（Apple Silicon、`aarch64-apple-darwin`）：2026-10-19 clone 後檢查過，sidecar、`cargo test`、`npm run build` 都正常；Node 為 v26。
+- **個人偏好**：使用者希望一律以台灣繁體中文溝通。這屬於個人設定，放在每台機器的 `~/.claude/CLAUDE.md`（M4 已建立）。在某台機器上發現該檔案不存在或缺少這條時，請幫忙補上：
+  ```markdown
+  # 個人偏好
+
+  - 與我溝通一律使用台灣繁體中文與台灣慣用詞（包含說明、摘要、問題與按鈕文字）；程式碼、指令、檔名維持原樣。
+  ```
+
 ## Sidecar
 
 - 放在 `src-tauri/binaries/`，依目標 triple 命名：`yt-dlp-x86_64-apple-darwin`（Intel Mac）、`yt-dlp-aarch64-apple-darwin`（Apple Silicon）、`yt-dlp-x86_64-pc-windows-msvc.exe`；ffmpeg 也用同樣的規則。
@@ -130,3 +143,4 @@
 - macOS 的 WKWebView Web Inspector 不支援在 Console 最上層寫 `await`，要包成 `(async () => { ... })()`。監聽事件可用 `__TAURI_INTERNALS__.invoke('plugin:event|listen', { event, target: { kind: 'Any' }, handler: __TAURI_INTERNALS__.transformCallback(fn) })`。
 - dev 模式下系統通知會以「終端機」的名義發出（tauri-plugin-notification 在 `is_dev()` 時使用 `com.apple.Terminal`），要到系統設定 → 通知 → 終端機開啟；打包後才會使用 App 自己的 identifier。
 - 下載出現 HTTP 403 時，先確認是不是 yt-dlp 版本太舊（見 Sidecar 一節）。
+- Node 26 內建的 `localStorage` 會蓋過 jsdom 的版本（未指定 `--localstorage-file` 時為 undefined），所以 `test`、`test:run` 加上 `NODE_OPTIONS=--no-experimental-webstorage`。這個選項需要 Node 22.4 以上；更舊的 Node 會直接報錯，請先升級 Node。
