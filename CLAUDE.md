@@ -108,14 +108,15 @@
 - 打包後 `yt-dlp`、`ffmpeg` 位於 `Contents/MacOS/`，與主程式 `app` 同一層，`ffmpeg_location()` 依此尋找 ffmpeg。
 - Bundle ID 為 `com.video-downloader.app`，dev 版與打包版共用同一份 history.json。
 - 2026-10-17 品牌更名：`productName` 與視窗標題改為 `MegaLoad`，打包產物變成 `MegaLoad.app`、`MegaLoad_<版本>_aarch64.dmg` 等。identifier 沒有改，所以 history.json 的位置不變。`package.json` 與 `Cargo.toml` 的套件名稱（`cross-platform-video-downloader`）只在內部使用，刻意保留不動。圖示的來源是根目錄的 `app-icon.svg`（紫、白、淺灰的「M＋下載箭頭」），修改後執行 `npm run tauri icon app-icon.svg` 重新產生。
-- App 目前**沒有簽章**：在本機執行沒問題，傳到其他 Mac 會被 Gatekeeper 擋下，要在 CI 設定 Apple 憑證（tasks.md 18.3）。
+- App 目前只有 **ad-hoc 簽章、未經公證**（2026-10-19 起 `tauri.conf.json` 設定 `bundle.macOS.signingIdentity: "-"`）。之前完全沒設定時，只有連結器自動加上的簽章（沒有封存資源、Info.plist 未綁定），瀏覽器下載的 .dmg 帶有隔離屬性，在 Apple Silicon 上會顯示「已損毀」。ad-hoc 簽章仍無法通過 Gatekeeper，其他 Mac 第一次開啟時要到「系統設定 → 隱私權與安全性」允許；要完全解決須在 CI 設定 Apple 憑證並公證（tasks.md 18.3）。
+- 有簽章就會啟用 hardened runtime，PyInstaller 版 yt-dlp 會因為解壓出的 Python 函式庫簽章不同而無法啟動（`different Team IDs`），所以 `src-tauri/Entitlements.plist` 加上 `com.apple.security.cs.disable-library-validation`（Tauri 也會套用到 sidecar）。之後用 Developer ID 簽章時同樣需要這項設定。
 - 已移除未使用的 `tauri-plugin-fs`（Rust）以及前端的 `@tauri-apps/plugin-dialog`、`plugin-fs`、`plugin-shell`（history 用的是 `std::fs`）。Rust 的 `tauri-plugin-shell`（sidecar）與 `tauri-plugin-dialog`（`select_folder`）仍在使用。前端只剩 `@tauri-apps/api` 與 `@tauri-apps/plugin-notification`。
 
 **階段 5 已完成（2026-10-17，本機驗證）**：`.github/workflows/release.yml`，推送 `v*.*.*` tag 時觸發，流程為 `test` → `build`（matrix）→ `release`。
 - `build` 只打包並上傳 artifact，三個目標都成功後，`release` 才用 `gh release create --draft` 建立 Draft Release（需求 8.5）。沒有使用 tauri-action，因為它會在每個 matrix job 各自建立 Release。
 - sidecar 用 `bash scripts/fetch-sidecars.sh <triple>` 下載（Windows 也用 `shell: bash`）。腳本只在 target 等於 host 時才執行驗證，所以在 Apple Silicon runner 上交叉編譯 x86_64 不會失敗。
 - `test` job 會先檢查 tag 與 `tauri.conf.json` 的 `version` 是否一致。**發版前要先改 `tauri.conf.json`（以及 `package.json`、`Cargo.toml`）的版本號**，再打 tag。
-- Apple 簽章：只有設定 `APPLE_CERTIFICATE` 等 secrets 時才會簽章；有 `APPLE_ID` 時才會公證。未設定時產出未簽章的 .dmg，並在 log 中顯示 warning。
+- Apple 簽章：只有設定 `APPLE_CERTIFICATE` 等 secrets 時才會簽章；有 `APPLE_ID` 時才會公證。未設定時以 ad-hoc 簽章產出 .dmg（`APPLE_SIGNING_IDENTITY` 會蓋過設定檔的 `"-"`），並在 log 中顯示 warning。
 - 本機驗證：actionlint 1.7.12 無錯誤；三段 shell 腳本（版本檢查、簽章設定、建立 Release）已用假環境變數實測；`--target x86_64-apple-darwin` 打包確認產物路徑與 workflow 的 glob 一致；三個平台的 sidecar 下載網址都可存取。
 - actionlint：Homebrew 版在這台 Intel Mac 上會從原始碼編譯 GHC 等依賴（要好幾個小時），請改用 GitHub release 的官方執行檔。
 

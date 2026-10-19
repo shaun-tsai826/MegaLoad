@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- yt-dlp 是 PyInstaller 單檔版，啟動時會把 Python 函式庫解壓到暫存資料夾再載入；
+	     那些函式庫的簽章與 App 不同，hardened runtime 預設會拒絕載入 -->
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<true/>
+</dict>
+</plist>
