@@ -104,7 +104,8 @@ jobs:
         shell: bash
         run: bash scripts/fetch-sidecars.sh ${{ matrix.target }}
 
-      # 只有設定了 secrets 才啟用簽章；未設定時保持環境變數不存在，避免打包時嘗試匯入空憑證
+      # 只有設定了 secrets 才以 Developer ID 簽章（APPLE_SIGNING_IDENTITY 會蓋過 tauri.conf.json 的 "-"）；
+      # 未設定時保持環境變數不存在，避免打包時嘗試匯入空憑證，並改用 tauri.conf.json 的 ad-hoc 簽章
       - name: 設定 Apple 簽章
         if: runner.os == 'macOS'
         env:
@@ -116,7 +117,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           if [[ -z "$APPLE_CERTIFICATE" ]]; then
-            echo "::warning::未設定 APPLE_CERTIFICATE，${{ matrix.target }} 將產出未簽章的 .dmg"
+            echo "::warning::未設定 APPLE_CERTIFICATE，${{ matrix.target }} 將以 ad-hoc 簽章產出 .dmg（未經公證，其他 Mac 開啟時需到「隱私權與安全性」允許）"
             exit 0
           fi
           {

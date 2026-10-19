@@ -1,6 +1,6 @@
 [package]
 name = "cross-platform-video-downloader"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 
 # Prevent the binary name from being "cross-platform-video-downloader"
