@@ -567,7 +567,7 @@ dependencies = [
 
 [[package]]
 name = "cross-platform-video-downloader"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "chrono",
  "libc",
