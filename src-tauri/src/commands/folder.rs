@@ -40,6 +40,15 @@ pub async fn get_default_download_dir(app: AppHandle) -> Result<String, AppError
         .map_err(|e| AppError::IoError(e.to_string()))
 }
 
+/// Returns whether `path` points to an existing file.
+///
+/// The history page uses it before re-downloading a completed record: if the
+/// file is still there, the user is asked before it is overwritten.
+#[tauri::command]
+pub async fn file_exists(path: String) -> bool {
+    std::path::Path::new(&path).is_file()
+}
+
 /// Reveals `path` in the system file explorer (Finder / Explorer).
 ///
 /// Pass a downloaded file's path to open its folder with the file selected;
@@ -63,6 +72,22 @@ pub async fn open_folder(app: AppHandle, path: String) -> Result<(), AppError> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    #[test]
+    fn file_exists_is_true_only_for_existing_files() {
+        let dir = std::env::temp_dir().join(format!("megaload-fe-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let file = dir.join("video [1920x1080].mp4");
+        std::fs::write(&file, b"x").unwrap();
+
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        assert!(rt.block_on(file_exists(file.to_string_lossy().into_owned())));
+        assert!(!rt.block_on(file_exists(dir.join("missing.mp4").to_string_lossy().into_owned())));
+        // A directory is not a downloaded file.
+        assert!(!rt.block_on(file_exists(dir.to_string_lossy().into_owned())));
+    }
+
     // Integration tests for select_folder and open_folder require a live
     // AppHandle with the dialog and opener plugins initialised, so they are
     // exercised during manual / Tauri dev-mode testing.

@@ -113,6 +113,11 @@
 - 2026-10-17 改發 `v0.1.2`：test、三個 build、release **全部成功**，有快取時約 9 分鐘（第一次約 25 分鐘）。舊的 `v0.1.1` tag 仍留在 GitHub 上，指向修正前的 commit。
 - 發版流程：在分支上把 `tauri.conf.json`、`package.json`（`npm version X --no-git-tag-version`）、`src-tauri/Cargo.toml` 改成新版號，跑 `cargo test` 讓 `Cargo.lock` 同步，合併回 `main` 後建立 `git tag -a vX -m ...`，再依序推送 `main` 與 tag。Draft Release 確認無誤後，到 GitHub 上手動 Publish。
 
+**歷史記錄重新下載與分頁（2026-10-19，需求 9、10，tasks.md Group 9）**：
+- 重新下載：已完成的記錄有「重新下載」。先以 `file_exists` 檢查原檔案：不存在就直接下載；存在則在該列詢問是否覆蓋，確認後以 `start_download({ ..., overwrite: true })` 加上 `--force-overwrites`。**不覆蓋時 yt-dlp 會因為同名檔案已存在而直接回報完成**，這就是需要覆蓋選項的原因（已實測）。
+- 分頁：每頁 5、10、20 筆（預設 10），存在 localStorage 的 `megaload.history.pageSize`；分頁狀態放在 `historyStore`，計算邏輯在 `src/utils/pagination.ts`，分頁列為 `PaginationBar.vue`（記錄超過 5 筆才顯示）。
+- 測試：cargo test 95 項、前端 87 項。
+
 **下一步**：
 1. 檢查 `v0.1.2` 的 Draft Release 附件（`.msi`、`-setup.exe`、`_aarch64.dmg`、`_x64.dmg`），並在 Windows 與 Apple Silicon 上實際安裝測試。
 2. 尚待驗證：Windows 版的取消下載是否會留下 yt-dlp 子程序；`parse_video` 給格式正確但不存在的網址（tasks.md 6. Checkpoint）。

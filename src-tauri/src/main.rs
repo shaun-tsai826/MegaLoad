@@ -26,6 +26,7 @@ fn main() {
             commands::folder::select_folder,
             commands::folder::open_folder,
             commands::folder::get_default_download_dir,
+            commands::folder::file_exists,
             commands::download::start_download,
             commands::download::cancel_download,
             commands::history::get_history,

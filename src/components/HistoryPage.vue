@@ -49,11 +49,11 @@
             <th class="w-24 px-4 py-2 font-medium">畫質</th>
             <th class="w-36 px-4 py-2 font-medium">時間</th>
             <th class="w-20 px-4 py-2 font-medium">狀態</th>
-            <th class="w-44 px-4 py-2 font-medium text-right">操作</th>
+            <th class="w-64 px-4 py-2 font-medium text-right">操作</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="record in history.records" :key="record.id" :data-id="record.id">
+          <tr v-for="record in history.pagedRecords" :key="record.id" :data-id="record.id">
             <td class="px-4 py-3">
               <img v-if="record.thumbnail" :src="record.thumbnail" alt="" class="h-10 w-16 rounded bg-gray-100 object-cover" />
               <div v-else class="h-10 w-16 rounded bg-gray-100" />
@@ -75,7 +75,24 @@
               </span>
             </td>
             <td class="px-4 py-3">
-              <div class="flex justify-end gap-2">
+              <div v-if="confirmingOverwriteId === record.id" class="flex flex-wrap items-center justify-end gap-2">
+                <span class="text-xs text-amber-700">檔案已存在，要覆蓋嗎？</span>
+                <button
+                  type="button"
+                  class="rounded-md bg-amber-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-amber-700"
+                  @click="startRedownload(record, true)"
+                >
+                  覆蓋下載
+                </button>
+                <button
+                  type="button"
+                  class="rounded-md border border-gray-300 px-2.5 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                  @click="confirmingOverwriteId = null"
+                >
+                  取消
+                </button>
+              </div>
+              <div v-else class="flex justify-end gap-2">
                 <button
                   v-if="record.status === 'completed' && record.filePath"
                   type="button"
@@ -83,6 +100,15 @@
                   @click="reveal(record.filePath)"
                 >
                   開啟位置
+                </button>
+                <button
+                  v-if="record.status === 'completed'"
+                  type="button"
+                  :disabled="checkingId === record.id"
+                  class="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  @click="redownload(record)"
+                >
+                  重新下載
                 </button>
                 <button
                   v-if="record.status !== 'completed'"
@@ -105,6 +131,17 @@
         </tbody>
       </table>
     </div>
+
+    <PaginationBar
+      v-if="history.records.length > PAGE_SIZE_OPTIONS[0]"
+      :page="history.currentPage"
+      :total-pages="history.totalPages"
+      :page-size="history.pageSize"
+      :total="history.records.length"
+      :range="history.pageRange"
+      @update:page="history.setPage"
+      @update:page-size="history.setPageSize"
+    />
   </section>
 </template>
 
@@ -113,10 +150,12 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
 
+import PaginationBar from "@/components/PaginationBar.vue";
 import type { HistoryRecord } from "@/types";
 import { useHistoryStore } from "@/stores/history";
 import { describeError, toAppError } from "@/utils/appError";
 import { formatDateTime, qualityLabel } from "@/utils/format";
+import { PAGE_SIZE_OPTIONS } from "@/utils/pagination";
 
 const STATUS_BADGES: Record<HistoryRecord["status"], { label: string; class: string }> = {
   completed: { label: "已完成", class: "bg-green-100 text-green-700" },
@@ -128,6 +167,10 @@ const history = useHistoryStore();
 const router = useRouter();
 const error = ref("");
 const confirmingClear = ref(false);
+/** Record whose file still exists and is waiting for the overwrite confirmation. */
+const confirmingOverwriteId = ref<string | null>(null);
+/** Record whose file is being checked, to disable its button meanwhile. */
+const checkingId = ref<string | null>(null);
 
 async function run(action: () => Promise<unknown>) {
   error.value = "";
@@ -157,6 +200,34 @@ function reveal(path: string) {
 async function retry(record: HistoryRecord) {
   await run(async () => {
     await history.retryDownload(record);
+    await router.push("/");
+  });
+}
+
+/**
+ * Re-downloads a completed record. If its file is still on disk, asks before
+ * overwriting it (otherwise yt-dlp would skip the download as already done).
+ */
+async function redownload(record: HistoryRecord) {
+  confirmingOverwriteId.value = null;
+  checkingId.value = record.id;
+  let exists = false;
+  try {
+    exists = await history.fileExists(record);
+  } catch (e) {
+    error.value = describeError(toAppError(e));
+    return;
+  } finally {
+    checkingId.value = null;
+  }
+  if (exists) confirmingOverwriteId.value = record.id;
+  else await startRedownload(record, false);
+}
+
+async function startRedownload(record: HistoryRecord, overwrite: boolean) {
+  confirmingOverwriteId.value = null;
+  await run(async () => {
+    await history.redownload(record, { overwrite });
     await router.push("/");
   });
 }

@@ -129,3 +129,29 @@
 3. WHEN CI/CD Pipeline 在各 Matrix Build 目標環境啟動，THE CI/CD Pipeline SHALL 依對應平台下載 yt-dlp 執行檔，並依 Tauri sidecar 命名規範將其放置於 `src-tauri/binaries/` 目錄。
 4. WHEN 所有 Matrix Build 目標建構成功，THE CI/CD Pipeline SHALL 自動建立 GitHub Draft Release，附件包含：Windows 的 `.exe` 及 `.msi` 安裝檔，以及 macOS aarch64 與 x86_64 各一份 `.dmg` 安裝檔。
 5. IF 任一 Matrix Build 目標建構失敗，THEN THE CI/CD Pipeline SHALL 標記該 workflow run 為失敗，且不建立 Draft Release。
+
+---
+
+### Requirement 9：重新下載歷史記錄中的檔案
+
+**User Story:** As a 使用者，I want 在歷史記錄頁面重新下載已完成的影片，so that 檔案被刪除、搬移或損毀時不必重新貼上網址。
+
+#### Acceptance Criteria
+
+1. THE Frontend SHALL 為狀態為「已完成」的 Download History 記錄提供「重新下載」按鈕。
+2. WHEN 使用者點擊「重新下載」且原檔案已不存在，THE App SHALL 使用該記錄的 URL、畫質及儲存路徑立即建立並執行新的 Download Task。
+3. WHEN 使用者點擊「重新下載」且原檔案仍存在，THE Frontend SHALL 先詢問是否覆蓋；使用者確認後 THE App SHALL 覆蓋原檔案重新下載，取消則不做任何變更。
+4. WHEN 重新下載的 Download Task 建立後，THE Frontend SHALL 切換至首頁顯示該任務的進度。
+
+---
+
+### Requirement 10：歷史記錄分頁
+
+**User Story:** As a 使用者，I want 分頁瀏覽下載歷史並自訂每頁顯示的筆數，so that 記錄很多時仍能快速找到需要的項目。
+
+#### Acceptance Criteria
+
+1. THE Frontend SHALL 以分頁方式顯示 Download History，每頁筆數可選擇 5、10 或 20 筆，預設為 10 筆。
+2. WHEN Download History 的筆數超過每頁筆數，THE Frontend SHALL 顯示頁碼、上一頁與下一頁按鈕，以及目前顯示的範圍（例如「第 11–20 筆，共 35 筆」）。
+3. WHEN 使用者變更每頁筆數，THE Frontend SHALL 保留使用者的選擇，下次開啟時沿用。
+4. WHEN 刪除記錄後目前頁面已不存在，THE Frontend SHALL 自動切換至最後一個有效頁面。

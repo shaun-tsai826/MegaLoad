@@ -65,6 +65,7 @@ export const useDownloadTaskStore = defineStore("downloadTask", () => {
     quality: QualityOption,
     outputPath: string,
     metadata: { title: string; thumbnail: string },
+    options: { overwrite?: boolean } = {},
   ): Promise<string> {
     let id: string;
     try {
@@ -74,6 +75,8 @@ export const useDownloadTaskStore = defineStore("downloadTask", () => {
         outputPath,
         title: metadata.title,
         thumbnail: metadata.thumbnail,
+        // Replace an existing file instead of letting yt-dlp skip the download.
+        ...(options.overwrite ? { overwrite: true } : {}),
       });
     } catch (e) {
       throw toAppError(e);

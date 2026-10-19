@@ -193,8 +193,13 @@ pub async fn start_download(
     url: String,
     quality: QualityOption,
     output_path: String,
+    title: Option<String>,      // 實作新增：歷史記錄用
+    thumbnail: Option<String>,  // 實作新增：歷史記錄用
+    overwrite: Option<bool>,    // 需求 9：true 時加上 --force-overwrites
 ) -> Result<String, AppError>  // 回傳 task_id
 ```
+
+`overwrite` 用於從歷史記錄重新下載：yt-dlp 看到同名檔案會直接回報完成而不下載，所以檔案仍存在時需要 `--force-overwrites`。
 
 **呼叫流程：**
 1. 生成 UUID 作為 `task_id`
@@ -250,6 +255,10 @@ pub async fn delete_history_item(id: String) -> Result<(), AppError>
 
 #[tauri::command]
 pub async fn clear_all_history() -> Result<(), AppError>
+
+// 需求 9：重新下載前檢查原檔案是否還在（src-tauri/src/commands/folder.rs）
+#[tauri::command]
+pub async fn file_exists(path: String) -> bool
 ```
 
 ---
@@ -618,6 +627,14 @@ export const useHistoryStore = defineStore("history", () => {
 });
 ```
 
+**需求 9、10 的擴充（實作於 `src/stores/history.ts`）：**
+
+- `redownload(record, { overwrite })`：以原始參數呼叫 `downloadTaskStore.startDownload`，`overwrite` 會轉成 `start_download` 的參數。`retryDownload` 即為不覆蓋的 `redownload`。
+- `fileExists(record)`：呼叫 `file_exists`；`filePath` 為 `null` 時直接回傳 `false`。
+- 分頁狀態：`pageSize`（5、10、20，預設 10，存在 localStorage 的 `megaload.history.pageSize`）、`currentPage`（從 1 開始，放在 store 中，離開頁面再回來仍保留）、`totalPages`、`pagedRecords`、`pageRange`。
+- `setPageSize` 會讓目前頁面的第一筆記錄維持在畫面上；`totalPages` 變少時（例如刪除記錄）會自動把 `currentPage` 拉回最後一頁。
+- 分頁的計算放在 `src/utils/pagination.ts`（`paginate`、`pageCount`、`clampPage`、`pageRange`、`pageWindow`），為純函式並以 fast-check 測試。
+
 ### Store 互動關係
 
 ```
@@ -899,8 +916,29 @@ jobs:
 
 ### `HistoryPage.vue`
 
-表格列每行顯示：縮圖、標題、畫質、路徑、完成時間、狀態徽章、操作按鈕（清除 / 重試）。
-頂部有「清除全部歷史」按鈕。
+表格列每行顯示：縮圖、標題、畫質、路徑、完成時間、狀態徽章、操作按鈕。
+頂部有「清除全部歷史」按鈕（兩段式確認）。
+
+操作按鈕依狀態而定：
+- 已完成：開啟位置、**重新下載**（需求 9）、清除
+- 失敗 / 已取消：重試、清除
+
+重新下載的流程：
+```
+點擊「重新下載」→ file_exists(filePath)
+  ├── 檔案不存在 → startDownload（不覆蓋）→ 跳回首頁
+  └── 檔案存在   → 該列顯示「檔案已存在，要覆蓋嗎？」[覆蓋下載] [取消]
+                    └── 覆蓋下載 → startDownload（overwrite: true）→ 跳回首頁
+```
+
+### `PaginationBar.vue`（需求 10）
+
+```
+第 11–20 筆，共 35 筆  每頁 [10 ▾] 筆            ‹ 1 … 2 [3] 4 … 7 ›
+```
+
+- 記錄超過 5 筆（最小的每頁筆數）時才顯示；只有一頁時隱藏頁碼與箭頭。
+- 頁碼以 `pageWindow` 產生：一定包含第一頁、最後一頁、目前頁及前後各一頁，其餘以「…」省略。
 
 ---
 

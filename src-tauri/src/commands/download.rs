@@ -137,9 +137,10 @@ pub async fn start_download(
     output_path: String,
     title: Option<String>,
     thumbnail: Option<String>,
+    overwrite: Option<bool>,
 ) -> Result<String, AppError> {
     let ffmpeg = ffmpeg_location()?;
-    let args = build_download_args(&url, &quality, &output_path, &ffmpeg);
+    let args = build_download_args(&url, &quality, &output_path, &ffmpeg, overwrite.unwrap_or(false));
     let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
     let (rx, child) =
         spawn_sidecar(&app, &arg_refs).map_err(|e| AppError::YtDlpError(e.to_string()))?;
@@ -204,11 +205,16 @@ pub async fn cancel_download(
 }
 
 /// Builds the yt-dlp argument list for a download.
+///
+/// `overwrite` adds `--force-overwrites`. Without it yt-dlp skips a download
+/// whose output file already exists and just reports it as finished, so
+/// re-downloading a file from the history needs it.
 pub(crate) fn build_download_args(
     url: &str,
     quality: &QualityOption,
     output_path: &str,
     ffmpeg_location: &str,
+    overwrite: bool,
 ) -> Vec<String> {
     let mut args: Vec<String> = [
         "--newline",
@@ -240,6 +246,10 @@ pub(crate) fn build_download_args(
 
     if *quality == QualityOption::AudioMp3 {
         args.extend(["-x", "--audio-format", "mp3"].map(String::from));
+    }
+
+    if overwrite {
+        args.push("--force-overwrites".into());
     }
 
     // `--` stops a URL that starts with `-` from being read as an option.
@@ -476,7 +486,7 @@ mod tests {
     const URL: &str = "https://www.youtube.com/watch?v=jNQXAC9IVRw";
 
     fn args_for(quality: QualityOption) -> Vec<String> {
-        build_download_args(URL, &quality, "/tmp/out", "/app/ffmpeg")
+        build_download_args(URL, &quality, "/tmp/out", "/app/ffmpeg", false)
     }
 
     /// Returns the value following `flag` in `args`.
@@ -533,6 +543,21 @@ mod tests {
     }
 
     #[test]
+    fn overwrite_adds_force_overwrites_before_the_url() {
+        let args = build_download_args(URL, &QualityOption::Q720p, "/o", "/f", true);
+        let flag = args.iter().position(|a| a == "--force-overwrites").expect("missing flag");
+        let sep = args.iter().position(|a| a == "--").unwrap();
+        assert!(flag < sep);
+    }
+
+    #[test]
+    fn no_overwrite_by_default() {
+        for q in [QualityOption::Q1080p, QualityOption::AudioMp3] {
+            assert!(!args_for(q).iter().any(|a| a == "--force-overwrites"));
+        }
+    }
+
+    #[test]
     fn video_qualities_sort_by_resolution() {
         for (q, sort) in [
             (QualityOption::Q1080p, "res:1080,ext:mp4:m4a"),
@@ -557,7 +582,7 @@ mod tests {
 
     #[test]
     fn url_starting_with_dash_stays_after_separator() {
-        let args = build_download_args("--exec=rm", &QualityOption::Q480p, "/o", "/f");
+        let args = build_download_args("--exec=rm", &QualityOption::Q480p, "/o", "/f", false);
         let sep = args.iter().position(|a| a == "--").unwrap();
         assert_eq!(args[sep + 1], "--exec=rm");
         assert_eq!(args.len(), sep + 2);

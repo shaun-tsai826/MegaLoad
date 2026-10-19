@@ -363,6 +363,30 @@
 
 ---
 
+### Group 9：歷史記錄重新下載與分頁（需求 9、10）
+
+- [x] 20. 歷史記錄重新下載（需求 9）
+  - [x] 20.1 後端：`start_download` 新增 `overwrite: Option<bool>`，為 `true` 時加上 `--force-overwrites`；新增 `file_exists` command 並在 `main.rs` 掛載
+    - _Requirements: 9.2, 9.3_
+  - [x] 20.2 Store：`downloadTaskStore.startDownload` 新增 `{ overwrite }` 選項；`historyStore` 新增 `redownload`、`fileExists`
+    - _Requirements: 9.2, 9.3_
+  - [x] 20.3 UI：已完成記錄顯示「重新下載」；檔案仍存在時在該列詢問是否覆蓋；開始下載後跳回首頁
+    - _Requirements: 9.1, 9.3, 9.4_
+
+- [x] 21. 歷史記錄分頁（需求 10）
+  - [x] 21.1 建立 `src/utils/pagination.ts`（`paginate`、`pageCount`、`clampPage`、`pageRange`、`pageWindow`）
+    - _Requirements: 10.1, 10.2_
+  - [x]* 21.2 為分頁計算撰寫 property test：所有頁面恰好涵蓋每筆記錄一次且依序排列；`pageWindow` 一定包含第一頁、最後一頁與目前頁
+    - _Requirements: 10.1, 10.2_
+  - [x] 21.3 `historyStore` 新增 `pageSize`（存於 localStorage）、`currentPage`、`totalPages`、`pagedRecords`、`pageRange`、`setPage`、`setPageSize`；刪除後自動回到有效頁面
+    - _Requirements: 10.1, 10.3, 10.4_
+  - [x] 21.4 建立 `src/components/PaginationBar.vue`，並在 `HistoryPage.vue` 改用 `pagedRecords`
+    - _Requirements: 10.1, 10.2_
+
+- [ ] 22. Checkpoint — 在 App 中實測重新下載（檔案存在 / 不存在）與分頁（換頁、每頁筆數、刪除後回到有效頁面）
+
+---
+
 ## Notes
 
 - 標有 `*` 的子任務為選用，可跳過以加速 MVP 開發

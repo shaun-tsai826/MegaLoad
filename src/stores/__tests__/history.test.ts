@@ -30,9 +30,15 @@ function record(id: string, overrides: Partial<HistoryRecord> = {}): HistoryReco
 }
 
 beforeEach(() => {
+  localStorage.clear();
   setActivePinia(createPinia());
   mockInvoke.mockReset();
 });
+
+/** `n` records with ids "0".."n-1", newest first. */
+function many(n: number): HistoryRecord[] {
+  return Array.from({ length: n }, (_, i) => record(String(i)));
+}
 
 describe("useHistoryStore", () => {
   it("loads records from the backend", async () => {
@@ -122,5 +128,103 @@ describe("Property 10: retry keeps url, quality and outputPath", () => {
         },
       ),
     );
+  });
+});
+
+describe("redownload", () => {
+  it("restarts with the original parameters, overwriting only when asked", async () => {
+    mockInvoke.mockResolvedValue("new-task");
+    const store = useHistoryStore();
+    const r = record("done", { status: "completed", filePath: "/out/a [1280x720].mp4" });
+
+    await store.redownload(r);
+    expect(mockInvoke).toHaveBeenLastCalledWith("start_download", {
+      url: "https://e/v",
+      quality: "720p",
+      outputPath: "/out",
+      title: "t-done",
+      thumbnail: "",
+    });
+
+    await store.redownload(r, { overwrite: true });
+    expect(mockInvoke).toHaveBeenLastCalledWith("start_download", expect.objectContaining({ overwrite: true }));
+    expect(useDownloadTaskStore().tasks.get("new-task")?.status).toBe("pending");
+  });
+
+  it("checks whether the file is still on disk", async () => {
+    const store = useHistoryStore();
+    mockInvoke.mockResolvedValueOnce(true);
+    expect(await store.fileExists(record("a", { filePath: "/out/a.mp4" }))).toBe(true);
+    expect(mockInvoke).toHaveBeenCalledWith("file_exists", { path: "/out/a.mp4" });
+
+    mockInvoke.mockClear();
+    expect(await store.fileExists(record("b", { filePath: null }))).toBe(false);
+    expect(mockInvoke).not.toHaveBeenCalled();
+  });
+});
+
+describe("pagination", () => {
+  it("shows 10 per page by default", () => {
+    const store = useHistoryStore();
+    store.records = many(23);
+    expect(store.pageSize).toBe(10);
+    expect(store.totalPages).toBe(3);
+    expect(store.pagedRecords.map((r) => r.id)).toEqual(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
+    store.setPage(3);
+    expect(store.pagedRecords.map((r) => r.id)).toEqual(["20", "21", "22"]);
+    expect(store.pageRange).toEqual({ from: 21, to: 23 });
+  });
+
+  it("clamps out-of-range pages", () => {
+    const store = useHistoryStore();
+    store.records = many(23);
+    store.setPage(99);
+    expect(store.currentPage).toBe(3);
+    store.setPage(0);
+    expect(store.currentPage).toBe(1);
+  });
+
+  it("changing the page size keeps the first visible record on screen", () => {
+    const store = useHistoryStore();
+    store.records = many(23);
+    store.setPage(3); // records 20-22
+    store.setPageSize(5);
+    expect(store.currentPage).toBe(5); // records 20-22 at size 5
+    expect(store.pagedRecords[0].id).toBe("20");
+    store.setPageSize(20);
+    expect(store.currentPage).toBe(2);
+    expect(store.pagedRecords[0].id).toBe("20");
+  });
+
+  it("remembers the page size", () => {
+    useHistoryStore().setPageSize(20);
+    setActivePinia(createPinia());
+    expect(useHistoryStore().pageSize).toBe(20);
+  });
+
+  it("ignores an invalid saved page size", () => {
+    localStorage.setItem("megaload.history.pageSize", "15");
+    expect(useHistoryStore().pageSize).toBe(10);
+  });
+
+  it("moves back a page when deleting empties the current one", async () => {
+    mockInvoke.mockResolvedValue(undefined);
+    const store = useHistoryStore();
+    store.records = many(11);
+    store.setPage(2); // only record "10"
+    await store.deleteRecord("10");
+    expect(store.totalPages).toBe(1);
+    expect(store.currentPage).toBe(1);
+    expect(store.pagedRecords).toHaveLength(10);
+  });
+
+  it("clearAll goes back to page 1", async () => {
+    mockInvoke.mockResolvedValue(undefined);
+    const store = useHistoryStore();
+    store.records = many(30);
+    store.setPage(3);
+    await store.clearAll();
+    expect(store.currentPage).toBe(1);
+    expect(store.pagedRecords).toEqual([]);
   });
 });
